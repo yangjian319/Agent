@@ -16,6 +16,8 @@ import time
 import os
 import sys
 
+# 心跳接口
+hearturl = "http://47.106.106.220:5000/register"
 
 # 创建日志文件目录
 logdir = "/data/Agent/log"
@@ -55,7 +57,6 @@ class task(threading.Thread):
     threading.Thread.__init__(self)
     self.username = username
   def run(self):
-    hearturl = "http://47.106.106.220:5000/register"
     while True:
       data = json.dumps(self.username)
       req = urllib2.Request(url=hearturl, data=data)
