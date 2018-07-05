@@ -7,6 +7,7 @@
 '''
 1、上报心跳，采用threading方式
 2、守护进程
+3、自升级，自动升级agent.py
 '''
 import json
 import socket
@@ -25,10 +26,10 @@ if not os.path.exists(logdir):
     os.makedirs(logdir)
 
 # 建立UDP
-address = ("0.0.0.0", 9997)
+address = ("0.0.0.0", 9998)
 udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udpsocket.bind(address)
-#udpsocket.listen()
+
 
 # 创建守护进程
 try:
@@ -69,3 +70,18 @@ hostname = {}
 hostname["username"] = gethostname
 heartbeat = task(hostname)
 heartbeat.start()
+
+while True:
+  data = udpsocket.recv(1024)
+  rec_data = str(data)
+  now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+  os.system("echo " + str(now) + "-" + str(data).rstrip("\n") +" >>/data/Agent/log/agent.log")
+  print("打印data信息")
+  print(rec_data)
+  if rec_data.startswith("agentupdate.py"):
+    break
+  else:
+    # 待更改
+    ret = os.popen("python /data/Agent/plugin/" + str(data).rstrip('\n')).read()
+udpsocket.close()
+ret = os.popen("python /data/Agent/plugin/" + str(data).rstrip('\n')).read()
