@@ -14,6 +14,7 @@
 1、上报心跳，采用threading方式
 2、守护进程
 3、自升级，自动升级agent.py
+4、日志，agent调用插件
 '''
 import json
 import logging
@@ -43,16 +44,12 @@ udpsocket.bind(address)
 
 
 # 日志
-'''
-定义日志格式，以及轮转周期为天
-'''
 LOG_FILE = "/data/Agent/log/agent.log"
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 fh = TimedRotatingFileHandler(LOG_FILE,when='D',interval=1,backupCount=30)
 datefmt = '%Y-%m-%d %H:%M:%S'
 format_str = '%(asctime)s %(levelname)s %(message)s '
-#formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 formatter = logging.Formatter(format_str, datefmt)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
@@ -60,7 +57,6 @@ logger.addHandler(fh)
 
 
 # 创建守护进程
-
 try:
   if os.fork() > 0:
     sys.exit(0)
@@ -97,23 +93,32 @@ hostname = {}
 hostname["username"] = gethostname
 t = threading.Thread(target=func, args=(hostname,))
 t.daemon = True
-t.start()
+try:
+  t.start()
+except Exception, e:
+  logging.info(e)
 
+# 接收controller消息
 while True:
   data = udpsocket.recv(1024)
   rec_data = str(data)
   msg = rec_data.rstrip("\n")
   logging.info(msg)
-  print(os.getpid())
-  print(os.getppid())
   if rec_data.startswith("agentupdate.py"):
     break
   else:
-    # 调用插件的时候执行
-    print("这是else部分")
-# 自升级的时候执行
+    # 调用插件
+    def func():
+      ret = os.system("python /data/Agent/plugin/" + str(data).rstrip('\n'))
+    t = threading.Thread(target=func, args=())
+    t.daemon = True
+    try:
+      t.start()
+    except Exception, e:
+      logging.info(e)
+
+# 自升级
 udpsocket.close()
-print("开始升级")
 ret = os.system("python /data/Agent/plugin/" + str(data).rstrip('\n'))
 sys.exit(0)
 

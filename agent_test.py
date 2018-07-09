@@ -4,6 +4,12 @@
 # @Author: yangjian
 # @File  : agent.py
 
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+# @Time  : 2018/7/4 9:25
+# @Author: yangjian
+# @File  : agent.py
+
 '''
 1、上报心跳，采用threading方式
 2、守护进程
@@ -54,7 +60,6 @@ logger.addHandler(fh)
 
 
 # 创建守护进程
-
 try:
   if os.fork() > 0:
     sys.exit(0)
@@ -84,11 +89,16 @@ def func(username):
     req = urllib2.Request(url=hearturl, data=data)
     heartreport = urllib2.urlopen(req)
     print(heartreport.read())
+    # get_threadname = threading.current_thread().name
+    # get_threadcount = threading.activeCount()
+    # print(get_threadname)
+    # print(get_threadcount)
     time.sleep(10)
 
 gethostname = socket.gethostname()
 hostname = {}
 hostname["username"] = gethostname
+#t = threading.Thread(target=func, args=(hostname,), name="Thread_A")
 t = threading.Thread(target=func, args=(hostname,))
 t.daemon = True
 t.start()
@@ -98,15 +108,23 @@ while True:
   rec_data = str(data)
   msg = rec_data.rstrip("\n")
   logging.info(msg)
-  print(os.getpid())
-  print(os.getppid())
   if rec_data.startswith("agentupdate.py"):
     break
   else:
-    # 调用插件的时候执行
-    print("这是else部分")
+    # 调用插件
+    def func():
+      ret = os.system("python /data/Agent/plugin/" + str(data).rstrip('\n'))
+    #   get_threadname = threading.current_thread().name
+    #   print(get_threadname)
+    # t = threading.Thread(target=func, args=(), name="Thread_B")
+    t = threading.Thread(target=func, args=())
+    t.daemon = True
+    t.start()
+    print("执行get_pid.py")
+
 # 自升级的时候执行
 udpsocket.close()
 print("开始升级")
 ret = os.system("python /data/Agent/plugin/" + str(data).rstrip('\n'))
 sys.exit(0)
+
