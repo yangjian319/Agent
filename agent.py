@@ -4,20 +4,31 @@
 # @Author: yangjian
 # @File  : agent.py
 
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+# @Time  : 2018/7/4 9:25
+# @Author: yangjian
+# @File  : agent.py
+
 '''
 1、上报心跳，采用threading方式
 2、守护进程
 3、自升级，自动升级agent.py
 '''
 import json
+import logging
 import socket
 import threading
 import urllib2
 import time
 import os
 import sys
+from logging.handlers import TimedRotatingFileHandler
+
 
 # 心跳接口
+import datetime
+
 hearturl = "http://47.106.106.220:5000/register"
 
 # 创建日志文件目录
@@ -31,12 +42,31 @@ udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udpsocket.bind(address)
 
 
+# 日志
+'''
+定义日志格式，以及轮转周期为天
+'''
+LOG_FILE = "/data/Agent/log/agent.log"
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+fh = TimedRotatingFileHandler(LOG_FILE,when='D',interval=1,backupCount=30)
+datefmt = '%Y-%m-%d %H:%M:%S'
+format_str = '%(asctime)s %(levelname)s %(message)s '
+#formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+formatter = logging.Formatter(format_str, datefmt)
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+
+
+
 # 创建守护进程
+
 try:
   if os.fork() > 0:
     sys.exit(0)
 except OSError, error:
-  os.system("echo " + time.ctime() + "' agent.py first fork failed!' >> /data/Agent/log/agent.log")
+  msg = "agent.py first fork failed!"
+  logging.info(msg)
   sys.exit(1)
 
 os.chdir("/")
@@ -47,41 +77,43 @@ try:
   if os.fork() > 0:
     sys.exit(0)
 except OSError, error:
-  os.system("echo " + time.ctime() + "' agent.py second fork failed!' >> /data/agent/log/agent.log")
+  msg = "agent.py second fork failed!"
+  logging.info(msg)
   sys.exit(1)
 
 
 # 心跳部分
 # 暂时只上传了一个hostname
-class task(threading.Thread):
-  def __init__(self,username=None):
-    threading.Thread.__init__(self)
-    self.username = username
-  def run(self):
-    while True:
-      data = json.dumps(self.username)
-      req = urllib2.Request(url=hearturl, data=data)
-      heartreport = urllib2.urlopen(req)
-      print(heartreport.read())
-      time.sleep(300)
+def func(username):
+  while True:
+    data = json.dumps(username)
+    req = urllib2.Request(url=hearturl, data=data)
+    heartreport = urllib2.urlopen(req)
+    print(heartreport.read())
+    time.sleep(10)
 
 gethostname = socket.gethostname()
 hostname = {}
 hostname["username"] = gethostname
-heartbeat = task(hostname)
-heartbeat.start()
+t = threading.Thread(target=func, args=(hostname,))
+t.daemon = True
+t.start()
 
 while True:
   data = udpsocket.recv(1024)
   rec_data = str(data)
-  now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-  os.system("echo " + str(now) + "-" + str(data).rstrip("\n") +" >>/data/Agent/log/agent.log")
-  print("打印data信息")
-  print(rec_data)
+  msg = rec_data.rstrip("\n")
+  logging.info(msg)
+  print(os.getpid())
+  print(os.getppid())
   if rec_data.startswith("agentupdate.py"):
     break
   else:
-    # 待更改
-    ret = os.popen("python /data/Agent/plugin/" + str(data).rstrip('\n')).read()
+    # 调用插件的时候执行
+    print("这是else部分")
+# 自升级的时候执行
 udpsocket.close()
-ret = os.popen("python /data/Agent/plugin/" + str(data).rstrip('\n')).read()
+print("开始升级")
+ret = os.system("python /data/Agent/plugin/" + str(data).rstrip('\n'))
+sys.exit(0)
+
