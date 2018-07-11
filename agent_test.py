@@ -60,25 +60,25 @@ logger.addHandler(fh)
 
 
 # 创建守护进程
-try:
-  if os.fork() > 0:
-    sys.exit(0)
-except OSError, error:
-  msg = "agent.py first fork failed!"
-  logging.info(msg)
-  sys.exit(1)
-
-os.chdir("/")
-os.setsid()
-os.umask(0)
-
-try:
-  if os.fork() > 0:
-    sys.exit(0)
-except OSError, error:
-  msg = "agent.py second fork failed!"
-  logging.info(msg)
-  sys.exit(1)
+# try:
+#   if os.fork() > 0:
+#     sys.exit(0)
+# except OSError, error:
+#   msg = "agent.py first fork failed!"
+#   logging.info(msg)
+#   sys.exit(1)
+#
+# os.chdir("/")
+# os.setsid()
+# os.umask(0)
+#
+# try:
+#   if os.fork() > 0:
+#     sys.exit(0)
+# except OSError, error:
+#   msg = "agent.py second fork failed!"
+#   logging.info(msg)
+#   sys.exit(1)
 
 
 # 心跳部分
@@ -104,11 +104,13 @@ t.daemon = True
 t.start()
 
 while True:
-  data = udpsocket.recv(1024)
+  data, addr = udpsocket.recvfrom(1024)
   rec_data = str(data)
+  dic = json.loads(data)
+  status = int(dic.get('status'))
   msg = rec_data.rstrip("\n")
   logging.info(msg)
-  if rec_data.startswith("agentupdate.py"):
+  if rec_data.startswith("agentupdate"):
     break
   else:
     # 调用插件
