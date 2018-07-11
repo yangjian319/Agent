@@ -20,6 +20,7 @@ import json
 import logging
 import socket
 import threading
+import urllib
 import urllib2
 import time
 import os
@@ -27,10 +28,22 @@ import sys
 from logging.handlers import TimedRotatingFileHandler
 
 
-# 心跳接口
-import datetime
+# 判断本机属于哪个机房，并把机房ip写入本地文件中供插件上报使用
+# 这个过程需要15s左右，至少需要8s
+iplist = ["172.30.130.137:18382", "172.30.130.126:18382", "10.124.5.163:18382", "10.144.2.248:18382", "10.123.30.177:18382", "172.30.194.121:18382", "172.16.5.20:18382", "10.181.1.0:18382"]
 
+for ip in iplist:
+  cmd = "curl -m 2 -s -o /dev/null" + " " + ip
+  is_ok = os.system(cmd)
+  if is_ok == 0:
+    currentip = ip
+    with open("/tmp/agent.lock","wb") as fd:  # 【具体写到哪个目录待确定】
+      fd.write(ip)
+
+# 机房ip
+jifangip = currentip
 hearturl = "http://47.106.106.220:5000/register"
+plugin_dir = "/data/Agent/plugin/"
 
 # 创建日志文件目录
 logdir = "/data/Agent/log"
@@ -79,19 +92,14 @@ except OSError, error:
 
 
 # 心跳部分
-# 暂时只上传了一个hostname
-def func(username):
+# 上传主机的ip
+# 定期检查agent.lock是否存在【未写】
+def func():
   while True:
-    data = json.dumps(username)
-    req = urllib2.Request(url=hearturl, data=data)
-    heartreport = urllib2.urlopen(req)
-    print(heartreport.read())
-    time.sleep(10)
-
-gethostname = socket.gethostname()
-hostname = {}
-hostname["username"] = gethostname
-t = threading.Thread(target=func, args=(hostname,))
+    cmd = "python /data/Agent/plugin/reportheart.py"
+    os.system(cmd)
+    time.sleep(float(240))
+t = threading.Thread(target=func, args=())
 t.daemon = True
 try:
   t.start()
@@ -99,17 +107,24 @@ except Exception, e:
   logging.info(e)
 
 # 接收controller消息
+'''
+{u'status': 5, u'hostId': 3902, u'name': u'net', u'url': u'http://10.124.5.163:18382/proxyDownLoad/net_v03.py', u'plugId': 1, u'version': u'03', u'cycle': u''}
+'''
 while True:
-  data = udpsocket.recv(1024)
-  rec_data = str(data)
-  msg = rec_data.rstrip("\n")
-  logging.info(msg)
-  if rec_data.startswith("agentupdate.py"):
+  data, addr = udpsocket.recvfrom(2018)
+  dic = json.loads(data)
+  logging.info(dic)
+  name = dic.get("name") # 这里的name需要proxy那边改成pluginName更好看
+  if name == "agentupdate":
     break
+  #url_base1 = 'http://' + tmp_url.split("/")[2]
+  # url_base1 = http://10.124.5.163:18382
   else:
     # 调用插件
+    # 插件的增删改查统一由update.py去处理，update.py接收多个参数
     def func():
-      ret = os.system("python /data/Agent/plugin/" + str(data).rstrip('\n'))
+      cmd = "python /data/Agent/plugin/update.py" + " " + dic
+      ret = os.system(cmd)
     t = threading.Thread(target=func, args=())
     t.daemon = True
     try:
@@ -119,6 +134,6 @@ while True:
 
 # 自升级
 udpsocket.close()
-ret = os.system("python /data/Agent/plugin/" + str(data).rstrip('\n'))
+ret = os.system("python /data/Agent/plugin/agentupdate.py")
 sys.exit(0)
 
