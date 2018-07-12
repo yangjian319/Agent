@@ -172,6 +172,7 @@ while True:
 
 # 自升级
 udpsocket.close()
-ret = os.system("python /data/Agent/plugin/agentupdate.py")
+cmd = "python /data/Agent/plugin/agentupdate.py" + " " + dic
+ret = os.system(cmd)
 sys.exit(0)
 
