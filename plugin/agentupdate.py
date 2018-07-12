@@ -3,18 +3,37 @@
 # @Time  : 2018/7/5 10:26
 # @Author: yangjian
 # @File  : agentupdate.py
+import logging
 import os
 import sys
 import time
 import urllib
+from logging.handlers import TimedRotatingFileHandler
 
-url = "http://47.106.106.220/agent.py"
+# 日志
+LOG_FILE = "/data/Agent/log/agent.log"
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+fh = TimedRotatingFileHandler(LOG_FILE,when='D',interval=1,backupCount=30)
+datefmt = '%Y-%m-%d %H:%M:%S'
+format_str = '%(asctime)s %(levelname)s %(message)s '
+formatter = logging.Formatter(format_str, datefmt)
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+
+
+dic = sys.argv[1:]
+tmp_url = dic.get('url')
+# 自升级的url需要确定一下
+url = "http://" + tmp_url.split("/")[2] + "agent文件路径需要确定"  # 待修改
+
 
 try:
   if os.fork() > 0:
     sys.exit(0)
 except OSError, error:
-  os.system("echo " + time.ctime() + "' update.py 1st fork failed!' >> /data/Agent/log/agent.log")
+  msg = "agentupdate first fork failed!"
+  logging.info(msg)
   sys.exit(1)
 
 os.chdir('/')
@@ -25,11 +44,11 @@ try:
   if os.fork() > 0:
     sys.exit(0)
 except OSError,error:
-  os.system("echo " + time.ctime() + "' update.py 2nd fork failed!' >> /data/Agent/log/agent.log")
+  msg = "agentupdate second fork failed!"
+  logging.info(msg)
   sys.exit(1)
 
 
 # 下载新的agent
 urllib.urlretrieve(url, "/data/Agent/temp/agent.py")
-
 os.system("sh /data/Agent/temp/agentupdate.sh")
