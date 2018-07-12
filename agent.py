@@ -25,7 +25,9 @@ import urllib2
 import time
 import os
 import sys
+from plugin import allip
 from logging.handlers import TimedRotatingFileHandler
+
 
 
 # 判断本机属于哪个机房，并把机房ip写入本地文件中供插件上报使用
@@ -96,8 +98,20 @@ except OSError, error:
 # 定期检查agent.lock是否存在【未写】
 def func():
   while True:
-    cmd = "python /data/Agent/plugin/reportheart.py"
-    os.system(cmd)
+    # 读文件，获得机房ip
+    with open("/tmp/agent.lock", "r") as fd:
+      jifangip = fd.read()
+
+    ips = allip.get_all_ips()
+    # {'ip': ['10.124.2.46', '10.148.138.133']}
+    data = json.dumps(ips)
+    headers = {"Content-Type": "application/json"}
+    url_base1 = "http://" + jifangip + "/autoProxyPlugIn/sendIp"
+    # 添加日志
+    req = urllib2.Request(url=url_base1, headers=headers, data=data.encode())
+    res = urllib2.urlopen(req)
+    data = res.read()
+    logging.info(data)
     time.sleep(float(240))
 t = threading.Thread(target=func, args=())
 t.daemon = True
