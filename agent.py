@@ -4,11 +4,6 @@
 # @Author: yangjian
 # @File  : agent.py
 
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @Time  : 2018/7/4 9:25
-# @Author: yangjian
-# @File  : agent.py
 
 '''
 1、上报心跳，采用threading方式
@@ -16,6 +11,7 @@
 3、自升级，自动升级agent.py
 4、日志，agent调用插件
 '''
+import commands
 import json
 import logging
 import socket
@@ -31,16 +27,20 @@ from logging.handlers import TimedRotatingFileHandler
 
 
 # 判断本机属于哪个机房，并把机房ip写入本地文件中供插件上报使用
-# 这个过程需要15s左右，至少需要8s
-iplist = ["172.30.130.137:18382", "172.30.130.126:18382", "10.124.5.163:18382", "10.144.2.248:18382", "10.123.30.177:18382", "172.30.194.121:18382", "172.16.5.20:18382", "10.181.1.0:18382"]
+# 这个过程需要12s左右
 
+iplist = ["172.30.130.137:18382", "172.30.130.126:18382", "10.124.5.163:18382", "10.144.2.248:18382", "10.123.30.177:18382", "172.30.194.121:18382", "172.16.5.20:18382", "10.181.1.0:18382"]
 for ip in iplist:
-  cmd = "curl -m 2 -s -o /dev/null" + " " + ip
-  is_ok = os.system(cmd)
-  if is_ok == 0:
+  try:
+    so = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    so.settimeout(2)
+    so.connect((ip.split(":")[0], 18382))
     currentip = ip
-    with open("/tmp/agent.lock","wb") as fd:  # 【具体写到哪个目录待确定】
+    with open("/tmp/agent.lock", "wb") as fd:
       fd.write(ip)
+    so.close()
+  except Exception:
+    pass
 
 # 机房ip
 jifangip = currentip
@@ -92,6 +92,40 @@ except OSError, error:
   logging.info(msg)
   sys.exit(1)
 
+# 安装好agent的时候就上传一次md5值入库
+def post_md5():
+  (status, md5) = commands.getstatusoutput("sudo md5sum /root/.ssh/authorized_keys|awk '{print $1}'")
+  req_data = {}
+  req_data['md5'] = md5
+  args_restful = urllib.urlencode(req_data)
+  req = urllib2.Request(url="http://" + jifangip + "/autoProxyPlugIn/uploadMD5", data=args_restful)
+  res = urllib2.urlopen(req)
+  data = res.read()
+  #print(data)
+post_md5()
+
+
+def file_name(plugin_dir):
+  L = []
+  for root, dirs, files in os.walk(plugin_dir):
+    for file in files:
+      if os.path.splitext(file)[1] == '.py':
+        L.append(file)
+  return L
+
+def sendFileName():
+  while True:
+    requrl = "http://" + jifangip + "/autoProxyPlugIn/sendFileName"
+    names = file_name(plugin_dir)
+    name = {"names": names}
+    name = urllib.urlencode(name)
+    req = urllib2.Request(url=requrl, data=name)
+    res = urllib2.urlopen(req)
+    data = res.read()
+    print(data)
+    time.sleep(float(240))
+sendfilename = threading.Thread(target=sendFileName, args=())
+sendfilename.start()
 
 # 心跳部分
 # 上传主机的ip
@@ -120,6 +154,7 @@ try:
 except Exception, e:
   logging.info(e)
 
+
 # 接收controller消息
 '''
 {u'status': 5, u'hostId': 3902, u'name': u'net', u'url': u'http://10.124.5.163:18382/proxyDownLoad/net_v03.py', u'plugId': 1, u'version': u'03', u'cycle': u''}
@@ -131,8 +166,6 @@ while True:
   name = dic.get("name") # 这里的name需要proxy那边改成pluginName更好看
   if name == "agentupdate":
     break
-  #url_base1 = 'http://' + tmp_url.split("/")[2]
-  # url_base1 = http://10.124.5.163:18382
   else:
     # 调用插件
     # 插件的增删改查统一由update.py去处理，update.py接收多个参数
