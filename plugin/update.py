@@ -51,7 +51,7 @@ url_install = "http://" + tmp_url.split("/")[2] + "/umsproxy/autoProxyPlugIn/age
 
 
 
-
+# 安装插件
 def installPlugin():
   req_data = {}
   req_data["hostId"] = dic.get("hostId")
@@ -124,6 +124,7 @@ def installPlugin():
     logging.info("插件执行结果：" + str(data))
 
 
+# 调用插件
 def doPlugin():
   req_data = {}
   req_data["hostId"] = dic.get("hostId")
@@ -169,7 +170,7 @@ def doPlugin():
 
     else:
       logging.info("插件存在，直接执行插件：" + str(file_name))
-      f = open("/etc/crontab", "a+")  # type:file
+      f = open("/etc/crontab", "a+")
       f.write("%s root python %s" % (cycle, plugin_dir1))
       f.close()
       req_data['type'] = '21'
@@ -195,7 +196,7 @@ def doPlugin():
     logging.info("插件执行结果：" + str(data))
 
 
-
+# 更新插件
 def updatePlugin():
   # 需要统一一下插件名格式
   # url = "http://172.30.130.244:8380/download/net_v07.py"
@@ -239,6 +240,7 @@ def updatePlugin():
     data = res.read()
     logging.info("插件执行结果：" + str(data))
 
+# 保存插件
 def savePlugin():
   req_data = {}
   req_data["hostId"] = dic.get("hostId")
@@ -276,6 +278,7 @@ def savePlugin():
       data = res.read()
       logging.info("插件执行结果：" + str(data))
 
+# 删除插件
 def deletePlugin():
   for d in dirs:
     if d == file_name:
