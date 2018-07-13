@@ -3,11 +3,11 @@
 # @Time  : 2018/7/5 10:26
 # @Author: yangjian
 # @File  : agentupdate.py
-import logging
+
 import os
 import sys
-import time
 import urllib
+import logging
 from logging.handlers import TimedRotatingFileHandler
 
 # 日志

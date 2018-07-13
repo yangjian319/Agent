@@ -26,13 +26,11 @@ logger.addHandler(fh)
 
 
 
-
-
 plugin_dir = "/data/Agent/plugin/"
 dirs = os.listdir(plugin_dir) # 【这里需要以.py取出名字部分，因为udpsocket接收到的name是没有.py的】
 dic = sys.argv[1:]
 url = dic.get("url")
-name = dic.get("name") # 这里的name需要proxy那边改成pluginName
+name = dic.get("name") # 这里的name可能需要proxy那边改成pluginName
 cycle = dic.get("cycle")
 status = int(dic.get("status"))
 file_name = url.split("/")[-1]
@@ -43,13 +41,9 @@ req_data = {}
 req_data["hostId"] = dic.get("hostId")
 req_data["plugId"] = dic.get("plugId")
 tmp_url = dic.get('url')
-# 机房的ip
-url_base = 'http://' + tmp_url.split("/")[2]  # 10.124.5.163:18382
+
 # 增删改查的接口
-url_install = "http://" + tmp_url.split("/")[2] + "/umsproxy/autoProxyPlugIn/agentType"
-# url_base1 = http://10.124.5.163:18382
-
-
+requrl = "http://" + tmp_url.split("/")[2] + "/umsproxy/autoProxyPlugIn/agentType"
 
 # 安装插件
 def installPlugin():
@@ -59,7 +53,7 @@ def installPlugin():
   try:
 
     if (file_name not in dirs):
-      urllib.urlretrieve(url, os.path.join(plugin_dir,file_name))  # 直接覆盖？
+      urllib.urlretrieve(url, os.path.join(plugin_dir,file_name))
       html = urllib.urlopen(url)
       html1 = html.read()
       code = html.code
@@ -74,7 +68,7 @@ def installPlugin():
         logging.info("插件执行结果：" + str(temp))
         req_data["type"] = "11"
         req_data["cause"] = "success"
-        req_data["url"] = url_install
+        req_data["url"] = requrl
         req_data = json.dumps(req_data)
         args_restful = urllib.urlencode(req_data)
         req = urllib2.Request(url=url, data=args_restful)
@@ -86,7 +80,7 @@ def installPlugin():
         logging.info("插件不存在，并且插件下载失败：" + str(file_name))
         req_data['type'] = '10'
         req_data['cause'] = "下载文件失败"
-        req_data["url"] = url_install
+        req_data["url"] = requrl
         req_data = json.dumps(req_data)
         args_restful = urllib.urlencode(req_data)
         req = urllib2.Request(url=url, data=args_restful)
@@ -100,7 +94,7 @@ def installPlugin():
       logging.info("插件执行结果：" + str(temp))
       req_data['type'] = '11'
       req_data['cause'] = 'success'
-      req_data["url"] = url_install
+      req_data["url"] = requrl
       req_data = json.dumps(req_data)
       args_restful = urllib.urlencode(req_data)
       req = urllib2.Request(url=url, data=args_restful)
@@ -115,7 +109,7 @@ def installPlugin():
     logging.info("安装插件出现异常：" + str(e))
     req_data['type'] = '10'
     req_data['cause'] = "系统异常"
-    req_data["url"] = url_install
+    req_data["url"] = requrl
     req_data = json.dumps(req_data)
     args_restful = urllib.urlencode(req_data)
     req = urllib2.Request(url=url, data=args_restful)
@@ -148,7 +142,7 @@ def doPlugin():
         f.close()
         req_data['type'] = '21'
         req_data['cause'] = 'success'
-        req_data["url"] = url_install
+        req_data["url"] = requrl
         req_data = json.dumps(req_data)
         args_restful = urllib.urlencode(req_data)
         req = urllib2.Request(url=url, data=args_restful)
@@ -160,7 +154,7 @@ def doPlugin():
         logging.info("插件不存在，并且插件下载失败：" + str(file_name))
         req_data['type'] = '20'
         req_data['cause'] = "下载文件失败"
-        req_data["url"] = url_install
+        req_data["url"] = requrl
         req_data = json.dumps(req_data)
         args_restful = urllib.urlencode(req_data)
         req = urllib2.Request(url=url, data=args_restful)
@@ -175,7 +169,7 @@ def doPlugin():
       f.close()
       req_data['type'] = '21'
       req_data['cause'] = 'success'
-      req_data["url"] = url_install
+      req_data["url"] = requrl
       req_data = json.dumps(req_data)
       args_restful = urllib.urlencode(req_data)
       req = urllib2.Request(url=url, data=args_restful)
@@ -187,7 +181,7 @@ def doPlugin():
     logging.info("安装插件出现异常：" + str(e))
     req_data['type'] = '20'
     req_data['cause'] = str(e)
-    req_data["url"] = url_install
+    req_data["url"] = requrl
     req_data = json.dumps(req_data)
     args_restful = urllib.urlencode(req_data)
     req = urllib2.Request(url=url, data=args_restful)
@@ -221,7 +215,7 @@ def updatePlugin():
       logging.info("更新插件成功")
       req_data['type'] = '31'
       req_data['cause'] = 'success'
-      req_data["url"] = url_install
+      req_data["url"] = requrl
       req_data = json.dumps(req_data)
       args_restful = urllib.urlencode(req_data)
       req = urllib2.Request(url=url, data=args_restful)
@@ -232,7 +226,7 @@ def updatePlugin():
   except Exception, e:
     req_data['type'] = '30'
     req_data['cause'] = str(e)
-    req_data["url"] = url_install
+    req_data["url"] = requrl
     req_data = json.dumps(req_data)
     args_restful = urllib.urlencode(req_data)
     req = urllib2.Request(url=url, data=args_restful)
@@ -260,7 +254,7 @@ def savePlugin():
         logging.info("插件不存在，插件下载成功：" + str(file_name))
         req_data['type'] = '41'
         req_data['cause'] = 'success'
-        req_data["url"] = url_install
+        req_data["url"] = requrl
         req_data = json.dumps(req_data)
         args_restful = urllib.urlencode(req_data)
         req = urllib2.Request(url=url, data=args_restful)
@@ -270,7 +264,7 @@ def savePlugin():
     except Exception, e:
       req_data['type'] = '40'
       req_data['cause'] = str(e)
-      req_data["url"] = url_install
+      req_data["url"] = requrl
       req_data = json.dumps(req_data)
       args_restful = urllib.urlencode(req_data)
       req = urllib2.Request(url=url, data=args_restful)
@@ -285,7 +279,7 @@ def deletePlugin():
       os.remove(plugin_dir + d)
       req_data['type'] = '51'
       req_data['cause'] = 'success'
-      req_data["url"] = url_install
+      req_data["url"] = requrl
       req_data = json.dumps(req_data)
       args_restful = urllib.urlencode(req_data)
       req = urllib2.Request(url=url, data=args_restful)
