@@ -163,7 +163,7 @@ while True:
     # 调用插件
     # 插件的增删改查统一由update.py去处理，update.py接收多个参数
     def func():
-      cmd = "python /data/Agent/plugin/update.py" + " " + dic
+      cmd = "python /data/Agent/plugin/update.py" + " " + data
       ret = os.system(cmd)
     t = threading.Thread(target=func, args=())
     t.daemon = True
@@ -174,7 +174,7 @@ while True:
 
 # 自升级
 udpsocket.close()
-cmd = "python /data/Agent/plugin/agentupdate.py" + " " + dic
+cmd = "python /data/Agent/plugin/agentupdate.py" + " " + data
 ret = os.system(cmd)
 sys.exit(0)
 

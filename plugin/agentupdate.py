@@ -6,6 +6,7 @@
 
 import os
 import sys
+import json
 import urllib
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -22,7 +23,8 @@ fh.setFormatter(formatter)
 logger.addHandler(fh)
 
 
-dic = sys.argv[1:]
+data = sys.argv[1:]
+dic = json.loads(data)
 tmp_url = dic.get('url')
 # 自升级的url需要确定一下
 url = "http://" + tmp_url.split("/")[2] + "agent文件路径需要确定"  # 待修改
