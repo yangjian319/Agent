@@ -34,7 +34,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             'data':'server got your post data'
         }
         self._set_headers()
-        self.wfile.write(json.dumps(response))
+        # self.wfile.write(json.dumps(response))
+        # self.wfile.write(json.dumps(post_data))
+        self.wfile.write(post_data)
 
 def run():
     port = 80
