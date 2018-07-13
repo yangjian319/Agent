@@ -89,18 +89,20 @@ except OSError, error:
 # 安装agent的时候就上传一次md5值入库
 def post_md5():
   (status, md5) = commands.getstatusoutput("sudo md5sum /root/.ssh/authorized_keys|awk '{print $1}'")
+  requrl = "http://" + jifangip + "/autoProxyPlugIn/uploadMD5"
   req_data = {}
   req_data['md5'] = md5
-  args_restful = urllib.urlencode(req_data)
-  req = urllib2.Request(url="http://" + jifangip + "/autoProxyPlugIn/uploadMD5", data=args_restful)
+  data = json.dumps(req_data)
+  headers = {"Content-Type": "application/json"}
+  req = urllib2.Request(url=requrl, headers=headers, data=data.encode())
   res = urllib2.urlopen(req)
   data = res.read()
-  #print(data)
+  logging.info("上传md5值到proxy：" + data)
 post_md5()
 
 
 def file_name(plugin_dir):
-  lsit = []
+  list = []
   for root, dirs, files in os.walk(plugin_dir):
     for file in files:
       if os.path.splitext(file)[1] == '.py':
@@ -110,13 +112,14 @@ def file_name(plugin_dir):
 def sendFileName():
   while True:
     requrl = "http://" + jifangip + "/autoProxyPlugIn/sendFileName"
-    names = file_name(plugin_dir)
-    name = {"names": names} # 这里就是dic = {"names":["a","b"]} 格式
-    name = urllib.urlencode(name)
-    req = urllib2.Request(url=requrl, data=name)
+    filenames = file_name(plugin_dir)
+    name = {"names": filenames}   # 这里就是dic = {"names":["a","b"]} 格式
+    data = json.dumps(name)
+    headers = {"Content-Type": "application/json"}
+    req = urllib2.Request(url=requrl, headers=headers, data=data.encode())
     res = urllib2.urlopen(req)
     data = res.read()
-    print(data)
+    logging.info("上报已安装插件到proxy：" + data)
     time.sleep(float(240))
 sendfilename = threading.Thread(target=sendFileName, args=())
 sendfilename.start()
@@ -134,12 +137,11 @@ def func():
     # 格式{'ip': ['10.124.2.46', '10.148.138.133']}
     data = json.dumps(ips)
     headers = {"Content-Type": "application/json"}
-    url_base1 = "http://" + jifangip + "/autoProxyPlugIn/sendIp"
-    # 添加日志
-    req = urllib2.Request(url=url_base1, headers=headers, data=data.encode())
+    requrl = "http://" + jifangip + "/autoProxyPlugIn/sendIp"
+    req = urllib2.Request(url=requrl, headers=headers, data=data.encode())
     res = urllib2.urlopen(req)
     data = res.read()
-    logging.info(data)
+    logging.info("上报心跳到proxy：" + data)
     time.sleep(float(240))
 t = threading.Thread(target=func, args=())
 t.daemon = True
