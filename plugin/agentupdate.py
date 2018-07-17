@@ -24,10 +24,12 @@ logger.addHandler(fh)
 
 
 data = sys.argv[1:]
-dic = json.loads(data)
+dic = data[0]
+dic = json.loads(dic)
 tmp_url = dic.get('url')
 # 自升级的url需要确定一下
-url = "http://" + tmp_url.split("/")[2] + "agent文件路径需要确定"  # 待修改
+url = "http://" + tmp_url.split("/")[2]   #+ "agent文件路径需要确定"   待修改
+print(url)
 
 
 try:
@@ -50,7 +52,8 @@ except OSError,error:
   logging.info(msg)
   sys.exit(1)
 
-
 # 下载新的agent
 urllib.urlretrieve(url, "/data/Agent/temp/agent.py")
+logging.info("下载成功")
 os.system("sh /data/Agent/temp/agentupdate.sh")
+logging.info("升级agent.py")
