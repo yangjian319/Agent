@@ -28,7 +28,7 @@ dic = data[0]
 dic = json.loads(dic)
 tmp_url = dic.get('url')
 # 自升级的url需要确定一下
-url = "http://" + tmp_url.split("/")[2]   #+ "agent文件路径需要确定"   待修改
+url = "http://" + tmp_url.split("/")[2]
 print(url)
 
 

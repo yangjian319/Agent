@@ -47,11 +47,11 @@ for ip in iplist:
     with open("/home/opvis/Agent/agent.lock", "wb") as fd:
       fd.write(currentip)
     so.close()
-  except Exception:
-    pass
+  except Exception as e:
+    logging.info(e)
 
 # 机房ip
-jifangip = currentip  # 这个变量名想想再改
+jifangip = currentip
 plugin_dir = "/home/opvis/Agent/plugin/"
 
 # 创建日志文件目录，这个其实都不用，它在安装agent的时候不是要下发一个tar.gz包吗，目录直接在里面建好？
@@ -60,9 +60,12 @@ if not os.path.exists(logdir):
   os.makedirs(logdir)
 
 # 建立UDP
-address = ("0.0.0.0", 9997)
-udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-udpsocket.bind(address)
+try:
+  address = ("0.0.0.0", 9997)
+  udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+  udpsocket.b
+except Exception as e:
+  logging.info(e)
 
 # 创建守护进程
 try:
@@ -98,8 +101,10 @@ def post_md5():
   data = res.read()
   logging.info("上传md5值到proxy：" + data)
 
-
-post_md5()
+try:
+  post_md5()
+except Exception as e:
+  logging.info(e)
 
 
 def file_name(plugin_dir):
@@ -111,11 +116,12 @@ def file_name(plugin_dir):
   return list
 
 
+# 上报已安装的插件（后期把update相关的插件单独放到一个update的文件夹？）
 def sendFileName():
   while True:
     requrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/sendFileName"
     filenames = file_name(plugin_dir)
-    name = {}
+    #name = {}
     name = {"names": filenames}
     name = urllib.urlencode(name)
     req = urllib2.Request(url=requrl, data=name)
@@ -123,27 +129,38 @@ def sendFileName():
     data = res.read()
     logging.info("上报已安装插件到proxy：" + data)
     time.sleep(float(60))
+try:
+  sendfilename = threading.Thread(target=sendFileName, args=())
+  sendfilename.start()
+except Exception as e:
+  logging.info(e)
 
 
-sendfilename = threading.Thread(target=sendFileName, args=())
-sendfilename.start()
-
-
-# 心跳部分
-# 上传主机的ip
-# 定期检查agent.lock是否存在【未写】
-def func():
+# 心跳，定期检查agent.lock存在否，
+def reportheart():
   while True:
     # 读文件，获得机房ip
-    if os.path.exists("/tmp/agent.lock"):
-      with open("/tmp/agent.lock", "r") as fd:
+    if os.path.exists("/home/opvis/Agent/agent.lock"):
+      with open("/home/opvis/Agent/agent.lock", "r") as fd:
         jifangip = fd.read()
     else:
-      logging.info("写机房ip地址文件不存在")
+      logging.info("机房ip地址文件不存在")
       sys.exit(1)
+
+    ips = []
     ip = {}
-    ips = allip.get_all_ips()
-    ip["ip"] = ips
+    allips = allip.get_all_ips()
+
+    for item in allips:
+      hip = allip.re_format_ip(item)
+      out = allip.read_ip(hip)
+      out.replace("\n", "")
+      out.replace("\r", "")
+      if out == "127.0.0.1":
+        continue
+      ips.append(out)
+      ip["ip"] = ",".join(ips)
+    logging.info(ip)
     ip = urllib.urlencode(ip)
     requrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/sendIp"
     req = urllib2.Request(url=requrl, data=ip)
@@ -151,14 +168,11 @@ def func():
     data = res.read()
     logging.info("上报心跳到proxy：" + data)
     time.sleep(float(30))
-
-
-t = threading.Thread(target=func, args=())
-t.daemon = True
-
 try:
+  t = threading.Thread(target=reportheart, args=())
+  t.daemon = True
   t.start()
-except Exception, e:
+except Exception as e:
   logging.info(e)
 
 # 接收controller消息
@@ -176,21 +190,21 @@ while True:
     break
   else:
     # 调用插件
-    # 插件的增删改查统一由update.py去处理，update.py接收多个参数
-    def func():
+    def callplugin():
       cmd = "python /home/opvis/Agent/plugin/update.py" + " " + data2
       ret = os.system(cmd)
-
-
-    t = threading.Thread(target=func, args=())
-    t.daemon = True
     try:
+      t = threading.Thread(target=callplugin, args=())
+      t.daemon = True
       t.start()
     except Exception, e:
       logging.info(e)
 
 # 自升级
 udpsocket.close()
-cmd = "python /home/opvis/Agent/plugin/agentupdate.py" + " " + data2
-ret = os.system(cmd)
+try:
+  cmd = "python /home/opvis/Agent/plugin/agentupdate.py" + " " + data2
+  ret = os.system(cmd)
+except Exception as e:
+  logging.info(e)
 sys.exit(0)

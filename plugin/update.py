@@ -3,14 +3,14 @@
 # @Time  : 2018/7/11 14:14
 # @Author: yangjian
 # @File  : update.py
-import json
-import logging
+
 import os
 import sys
+import json
 import urllib
 import urllib2
+import logging
 from logging.handlers import TimedRotatingFileHandler
-
 
 
 # 定义日志格式、路径
@@ -25,15 +25,14 @@ fh.setFormatter(formatter)
 logger.addHandler(fh)
 
 
-
 plugin_dir = "/home/opvis/Agent/plugin/"
-dirs = os.listdir(plugin_dir) # 【这里需要以.py取出名字部分，因为udpsocket接收到的name是没有.py的】
+dirs = os.listdir(plugin_dir)
 data = sys.argv[1:]
 logging.info(data)
 dic = data[0]
 dic = json.loads(dic)
 url = dic.get("url")
-name = dic.get("name") # 这里的name可能需要proxy那边改成pluginName
+name = dic.get("name")
 cycle = dic.get("cycle")
 status = int(dic.get("status"))
 file_name = url.split("/")[-1]
@@ -67,10 +66,10 @@ def installPlugin():
         req_data["type"] = "11"
         req_data["cause"] = "success"
         req_data = urllib.urlencode(req_data)
-        req = urllib2.Request(url=url, data=req_data)
+        req = urllib2.Request(url=requrl, data=req_data)
         res = urllib2.urlopen(req)
         data = res.read()
-        logging.info("插件执行结果：" + str(data))
+        logging.info("安装插件执行结果：" + str(data))
         # hostRelationship
         url_new = "http://" + tmp_url.split("/")[2] + "/umsproxy/hostExtract/uploadHostInformation"
         url_new = str(url_new)
@@ -89,10 +88,10 @@ def installPlugin():
         req_data['type'] = '10'
         req_data['cause'] = "下载文件失败"
         req_data = urllib.urlencode(req_data)
-        req = urllib2.Request(url=url, data=req_data)
+        req = urllib2.Request(url=requrl, data=req_data)
         res = urllib2.urlopen(req)
         data = res.read()
-        logging.info("插件执行结果：" + str(data))
+        logging.info("安装插件执行结果：" + str(data))
 
     else:
       logging.info("插件存在，直接执行插件：" + str(file_name))
@@ -101,10 +100,10 @@ def installPlugin():
       req_data['type'] = '11'
       req_data['cause'] = 'success'
       req_data = urllib.urlencode(req_data)
-      req = urllib2.Request(url=url, data=req_data)
+      req = urllib2.Request(url=requrl, data=req_data)
       res = urllib2.urlopen(req)
       if res:
-        logging.info("插件执行结果：成功" )
+        logging.info("安装插件执行结果：成功" )
       # hostRelationship
       url_new = "http://" + tmp_url.split("/")[2] + "/umsproxy/hostExtract/uploadHostInformation"
       url_new = str(url_new)
@@ -124,10 +123,10 @@ def installPlugin():
     req_data["type"] = "10"
     req_data["cause"] = "系统异常"
     req_data = urllib.urlencode(req_data)
-    req = urllib2.Request(url=url, data=req_data)
+    req = urllib2.Request(url=requrl, data=req_data)
     res = urllib2.urlopen(req)
     data = res.read()
-    logging.info("插件执行结果：" + str(data))
+    logging.info("安装插件执行结果：" + str(data))
 
 
 # 调用插件
@@ -153,10 +152,10 @@ def doPlugin():
         req_data['type'] = '21'
         req_data['cause'] = 'success'
         req_data = urllib.urlencode(req_data)
-        req = urllib2.Request(url=url, data=req_data)
+        req = urllib2.Request(url=requrl, data=req_data)
         res = urllib2.urlopen(req)
         data = res.read()
-        logging.info("插件执行结果：" + str(data))
+        logging.info("调用插件执行结果：" + str(data))
 
       elif code != 200:
         logging.info("插件不存在，并且插件下载失败：" + str(file_name))
@@ -164,10 +163,10 @@ def doPlugin():
         req_data['type'] = '20'
         req_data['cause'] = "下载文件失败"
         req_data = urllib.urlencode(req_data)
-        req = urllib2.Request(url=url, data=req_data)
+        req = urllib2.Request(url=requrl, data=req_data)
         res = urllib2.urlopen(req)
         data = res.read()
-        logging.info("插件执行结果：" + str(data))
+        logging.info("调用插件执行结果：" + str(data))
 
     else:
       logging.info("插件存在，直接执行插件：" + str(file_name))
@@ -178,7 +177,7 @@ def doPlugin():
       req_data['type'] = '21'
       req_data['cause'] = 'success'
       req_data = urllib.urlencode(req_data)
-      req = urllib2.Request(url=url, data=req_data)
+      req = urllib2.Request(url=requrl, data=req_data)
       res = urllib2.urlopen(req)
       data = res.read()
       logging.info("插件执行结果：" + str(data))
@@ -189,7 +188,7 @@ def doPlugin():
     req_data['type'] = '20'
     req_data['cause'] = str(e)
     req_data = urllib.urlencode(req_data)
-    req = urllib2.Request(url=url, data=req_data)
+    req = urllib2.Request(url=requrl, data=req_data)
     res = urllib2.urlopen(req)
     data = res.read()
     logging.info("插件执行结果：" + str(data))
@@ -217,20 +216,20 @@ def updatePlugin():
       req_data['type'] = '31'
       req_data['cause'] = 'success'
       req_data = urllib.urlencode(req_data)
-      req = urllib2.Request(url=url, data=req_data)
+      req = urllib2.Request(url=requrl, data=req_data)
       res = urllib2.urlopen(req)
       data = res.read()
-      logging.info("插件执行结果：" + str(data))
+      logging.info("更新插件执行结果：" + str(data))
 
   except Exception, e:
     req_data = {}
     req_data['type'] = '30'
     req_data['cause'] = str(e)
     req_data = urllib.urlencode(req_data)
-    req = urllib2.Request(url=url, data=req_data)
+    req = urllib2.Request(url=requrl, data=req_data)
     res = urllib2.urlopen(req)
     data = res.read()
-    logging.info("插件执行结果：" + str(data))
+    logging.info("更新插件执行结果：" + str(data))
 
 # 保存插件
 def savePlugin():
@@ -251,7 +250,7 @@ def savePlugin():
         req_data['type'] = '41'
         req_data['cause'] = 'success'
         req_data = urllib.urlencode(req_data)
-        req = urllib2.Request(url=url, data=req_data)
+        req = urllib2.Request(url=requrl, data=req_data)
         res = urllib2.urlopen(req)
         data = res.read()
         logging.info("插件执行结果：" + str(data))
@@ -260,10 +259,10 @@ def savePlugin():
       req_data['type'] = '40'
       req_data['cause'] = str(e)
       req_data = urllib.urlencode(req_data)
-      req = urllib2.Request(url=url, data=req_data)
+      req = urllib2.Request(url=requrl, data=req_data)
       res = urllib2.urlopen(req)
       data = res.read()
-      logging.info("插件执行结果：" + str(data))
+      logging.info("保存插件执行结果：" + str(data))
 
 # 删除插件
 def deletePlugin():
@@ -274,10 +273,10 @@ def deletePlugin():
       req_data['type'] = '51'
       req_data['cause'] = 'success'
       req_data = urllib.urlencode(req_data)
-      req = urllib2.Request(url=url, data=req_data)
+      req = urllib2.Request(url=requrl, data=req_data)
       res = urllib2.urlopen(req)
       data = res.read()
-      logging.info("插件执行结果：" + str(data))
+      logging.info("删除插件执行结果：" + str(data))
 
 
 logging.info(status)
