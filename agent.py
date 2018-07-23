@@ -63,7 +63,7 @@ if not os.path.exists(logdir):
 try:
   address = ("0.0.0.0", 9997)
   udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-  udpsocket.b
+  udpsocket.bind(address)
 except Exception as e:
   logging.info(e)
 
@@ -128,7 +128,7 @@ def sendFileName():
     res = urllib2.urlopen(req)
     data = res.read()
     logging.info("上报已安装插件到proxy：" + data)
-    time.sleep(float(60))
+    time.sleep(float(360))
 try:
   sendfilename = threading.Thread(target=sendFileName, args=())
   sendfilename.start()
@@ -167,7 +167,7 @@ def reportheart():
     res = urllib2.urlopen(req)
     data = res.read()
     logging.info("上报心跳到proxy：" + data)
-    time.sleep(float(30))
+    time.sleep(float(720))
 try:
   t = threading.Thread(target=reportheart, args=())
   t.daemon = True
@@ -192,7 +192,7 @@ while True:
     # 调用插件
     def callplugin():
       cmd = "python /home/opvis/Agent/plugin/update.py" + " " + data2
-      ret = os.system(cmd)
+      os.system(cmd)
     try:
       t = threading.Thread(target=callplugin, args=())
       t.daemon = True
