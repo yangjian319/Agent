@@ -12,7 +12,6 @@ import urllib2
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-
 # 定义日志格式、路径
 LOG_FILE = "/home/opvis/Agent/log/update.log"
 logger = logging.getLogger()
@@ -23,7 +22,6 @@ format_str = '%(asctime)s %(levelname)s %(message)s '
 formatter = logging.Formatter(format_str, datefmt)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
-
 
 plugin_dir = "/home/opvis/Agent/plugin/"
 dirs = os.listdir(plugin_dir)
@@ -46,17 +44,23 @@ tmp_url = dic.get('url')
 requrl = "http://" + tmp_url.split("/")[2] + "/umsproxy/autoProxyPlugIn/agentType"
 requrl = str(requrl)
 
+
 # 安装插件
 def installPlugin():
+  get_hostid = dic.get('hostId')
+  get_plugid = dic.get('plugId')
+  logging.info("安装的时候获取两个id")
+  logging.info(get_hostid)
+  logging.info(get_plugid)
   try:
 
     if (file_name not in dirs):
-      urllib.urlretrieve(url, os.path.join(plugin_dir,file_name))
+      urllib.urlretrieve(url, os.path.join(plugin_dir, file_name))
       html = urllib.urlopen(url)
       html1 = html.read()
       code = html.code
       try:
-        with open(os.path.join(plugin_dir,file_name), "wb") as fp:
+        with open(os.path.join(plugin_dir, file_name), "wb") as fp:
           fp.write(html1)
           logging.info("插件下载成功")
       except Exception, e:
@@ -72,12 +76,11 @@ def installPlugin():
         req_data["type"] = "11"
         req_data["cause"] = "success"
         req_data = urllib.urlencode(req_data)
+        logging.info(req_data)
         req = urllib2.Request(url=requrl, data=req_data)
-        try:
-          res = urllib2.urlopen(req)
-        except Exception as e:
-          logging.info(e)
+        res = urllib2.urlopen(req)
         data = res.read()
+        logging.info("插件安装成功200")
         logging.info("安装插件执行结果：" + str(data))
         # hostRelationship
         url_new = "http://" + tmp_url.split("/")[2] + "/umsproxy/hostExtract/uploadHostInformation"
@@ -87,10 +90,7 @@ def installPlugin():
         hostRelationship = json.dumps(hostRelationship)
         header_dict = {"Content-Type": "application/json;charset=UTF-8"}
         req = urllib2.Request(url=url_new, data=hostRelationship, headers=header_dict)
-        try:
-          res = urllib2.urlopen(req)
-        except Exception as e:
-          logging.info(e)
+        res = urllib2.urlopen(req)
         logging.info("主机关系")
         logging.info(res.read())
 
@@ -104,10 +104,7 @@ def installPlugin():
         req_data['cause'] = "下载文件失败"
         req_data = urllib.urlencode(req_data)
         req = urllib2.Request(url=requrl, data=req_data)
-        try:
-          res = urllib2.urlopen(req)
-        except Exception as e:
-          logging.info(e)
+        res = urllib2.urlopen(req)
         data = res.read()
         logging.info("安装插件执行结果：" + str(data))
 
@@ -121,12 +118,9 @@ def installPlugin():
       req_data['cause'] = 'success'
       req_data = urllib.urlencode(req_data)
       req = urllib2.Request(url=requrl, data=req_data)
-      try:
-        res = urllib2.urlopen(req)
-      except Exception as e:
-        logging.info(e)
+      res = urllib2.urlopen(req)
       if res:
-        logging.info("安装插件执行结果：成功" )
+        logging.info("安装插件执行结果：成功")
       # hostRelationship
       url_new = "http://" + tmp_url.split("/")[2] + "/umsproxy/hostExtract/uploadHostInformation"
       url_new = str(url_new)
@@ -135,10 +129,7 @@ def installPlugin():
       hostRelationship = json.dumps(hostRelationship)
       header_dict = {"Content-Type": "application/json;charset=UTF-8"}
       req = urllib2.Request(url=url_new, data=hostRelationship, headers=header_dict)
-      try:
-        res = urllib2.urlopen(req)
-      except Exception as e:
-        logging.info(e)
+      res = urllib2.urlopen(req)
       logging.info(res.read())
 
 
@@ -152,10 +143,7 @@ def installPlugin():
     req_data["cause"] = "系统异常"
     req_data = urllib.urlencode(req_data)
     req = urllib2.Request(url=requrl, data=req_data)
-    try:
-      res = urllib2.urlopen(req)
-    except Exception as e:
-      logging.info(e)
+    res = urllib2.urlopen(req)
     data = res.read()
     logging.info("安装插件执行结果：" + str(data))
 
@@ -164,12 +152,12 @@ def installPlugin():
 def doPlugin():
   try:
     if (file_name not in dirs):
-      urllib.urlretrieve(url, os.path.join(plugin_dir,file_name))  # 直接覆盖？
+      urllib.urlretrieve(url, os.path.join(plugin_dir, file_name))  # 直接覆盖？
       html = urllib.urlopen(url)
       html1 = html.read()
       code = html.code
       try:
-        with open(os.path.join(plugin_dir,file_name), "wb") as fp:
+        with open(os.path.join(plugin_dir, file_name), "wb") as fp:
           fp.write(html1)
       except Exception, e:
         logging.info(e)
@@ -236,9 +224,13 @@ def doPlugin():
 # 更新插件
 def updatePlugin():
   try:
-    for file_name in dirs:
-      os.remove(plugin_dir + file_name)
-      break
+    file_name = url.split("/")[-1]
+    logging.info(file_name)
+    logging.info(dirs)
+    # for file_name in dirs:
+    #  logging.info(plugin_dir + file_name)
+    #  os.remove(plugin_dir + file_name)
+    #  break
     # 下载新插件
     urllib.urlretrieve(url, os.path.join(plugin_dir, file_name))
     html = urllib.urlopen(url)
@@ -247,6 +239,7 @@ def updatePlugin():
     try:
       with open(os.path.join(plugin_dir, file_name), "wb") as fp:
         fp.write(html1)
+        logging.info("下载插件完成")
     except Exception, e:
       logging.info(e)
     if code == 200:
@@ -274,8 +267,10 @@ def updatePlugin():
     data = res.read()
     logging.info("更新插件执行结果：" + str(data))
 
+
 # 保存插件
 def savePlugin():
+  file_name = url.split("/")[-1]
   if (file_name not in dirs):
     try:
       urllib.urlretrieve(url, os.path.join(plugin_dir, file_name))  # 直接覆盖？
@@ -311,11 +306,13 @@ def savePlugin():
       data = res.read()
       logging.info("保存插件执行结果：" + str(data))
 
+
 # 删除插件
 def deletePlugin():
   for d in dirs:
     if d == file_name:
       os.remove(plugin_dir + d)
+
       req_data = {}
       req_data['hostId'] = dic.get('hostId')
       req_data['plugId'] = dic.get('plugId')
