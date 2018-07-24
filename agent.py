@@ -121,14 +121,28 @@ def sendFileName():
   while True:
     requrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/sendFileName"
     filenames = file_name(plugin_dir)
-    #name = {}
-    name = {"names": filenames}
-    name = urllib.urlencode(name)
-    req = urllib2.Request(url=requrl, data=name)
-    res = urllib2.urlopen(req)
-    data = res.read()
-    logging.info("上报已安装插件到proxy：" + data)
-    time.sleep(float(360))
+    logging.info(filenames)
+    name = {}
+    allips = allip.get_all_ips()
+    for item in allips:
+      hip = allip.re_format_ip(item)
+      out = allip.read_ip(hip)
+      out.replace("\n", "")
+      out.replace("\r", "")
+      if out == "127.0.0.1":
+        continue
+      #status = ""
+
+      name = {"names":filenames}
+      name["ip"] = out
+      name = urllib.urlencode(name)
+      logging.info("name")
+      logging.info(name)
+      req = urllib2.Request(url=requrl, data=name)
+      res = urllib2.urlopen(req)
+      data = res.read()
+      logging.info("上报已安装插件到proxy：" + data)
+    time.sleep(float(240))
 try:
   sendfilename = threading.Thread(target=sendFileName, args=())
   sendfilename.start()
@@ -136,7 +150,7 @@ except Exception as e:
   logging.info(e)
 
 
-# 心跳，定期检查agent.lock存在否，
+# 心跳，定期检查agent.lock存在否
 def reportheart():
   while True:
     # 读文件，获得机房ip
@@ -167,7 +181,7 @@ def reportheart():
     res = urllib2.urlopen(req)
     data = res.read()
     logging.info("上报心跳到proxy：" + data)
-    time.sleep(float(720))
+    time.sleep(float(240))
 try:
   t = threading.Thread(target=reportheart, args=())
   t.daemon = True
@@ -176,6 +190,9 @@ except Exception as e:
   logging.info(e)
 
 # 接收controller消息
+def callplugin():
+  cmd = "python /home/opvis/Agent/plugin/update.py" + " " + data2
+  os.system(cmd)
 while True:
   data, addr = udpsocket.recvfrom(2018)
   data1 = "{0}".format(data)
@@ -184,15 +201,14 @@ while True:
   data2 = lstr + data1 + rstr
   dic = json.loads(data)  # str
   # data = json.dumps(data)
+  time_second = time.time()
+  logging.info(time_second)
   logging.info(dic)
   name = dic.get("name")
   if name == "agentupdate":
     break
   else:
     # 调用插件
-    def callplugin():
-      cmd = "python /home/opvis/Agent/plugin/update.py" + " " + data2
-      os.system(cmd)
     try:
       t = threading.Thread(target=callplugin, args=())
       t.daemon = True
