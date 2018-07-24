@@ -55,5 +55,5 @@ except OSError,error:
 # 下载新的agent
 urllib.urlretrieve(url, "/data/Agent/temp/agent.py")
 logging.info("下载成功")
-os.system("sh /data/Agent/temp/agentupdate.sh")
+os.system("sh /data/Agent/update/agentupdate.sh")
 logging.info("升级agent.py")
