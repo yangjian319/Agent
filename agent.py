@@ -181,6 +181,8 @@ def reportheart():
     res = urllib2.urlopen(req)
     data = res.read()
     logging.info("上报心跳到proxy：" + data)
+    # 在这里写检查agent主程序是否有更新，通过urllib去检查一个地址是否能连通，能，就自己给自己发一个udp消息，内容为agentupdate
+    # agentupdate.py里面需要读取agent.lock文件重新拼接agent.py下载url
     time.sleep(float(240))
 try:
   t = threading.Thread(target=reportheart, args=())
@@ -204,6 +206,7 @@ while True:
   time_second = time.time()
   logging.info(time_second)
   logging.info(dic)
+#{u'pluginfo': {u'status': 3, u'url': u'http://10.124.5.163:18382/proxyDownLoad/net_v03.py', u'version': u'03', u'name': u'net', u'cycle': u''}, u'hostid': 3902, u'plugid': 1}
   name = dic.get("name")
   if name == "agentupdate":
     break
