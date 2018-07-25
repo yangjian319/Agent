@@ -27,9 +27,11 @@ plugin_dir = "/home/opvis/Agent/plugin/"
 dirs = os.listdir(plugin_dir)
 data = sys.argv[1:]
 logging.info("接收到的udp信息")
+#['{"hostid":3902,"plugid":1,"pluginfo":{"cycle":"","name":"net","status":3,"url":"http://10.124.5.163:18382/proxyDownLoad/net_v03.py","version":"03"}}']
 logging.info(data)
-dic = data[0]
-dic = json.loads(dic)
+data1 = data[0]
+data2 = json.loads(data1)
+dic = data2["pluginfo"]
 url = dic.get("url")
 name = dic.get("name")
 cycle = dic.get("cycle")
@@ -47,8 +49,8 @@ requrl = str(requrl)
 
 # 安装插件
 def installPlugin():
-  get_hostid = dic.get('hostId')
-  get_plugid = dic.get('plugId')
+  get_hostid = data2.get('hostid')
+  get_plugid = data2.get('plugid')
   logging.info("安装的时候获取两个id")
   logging.info(get_hostid)
   logging.info(get_plugid)
@@ -67,8 +69,8 @@ def installPlugin():
         logging.info(e)
       if code == 200:
         req_data = {}
-        req_data['hostId'] = dic.get('hostId')
-        req_data['plugId'] = dic.get('plugId')
+        req_data['hostId'] = data2.get('hostid')
+        req_data['plugId'] = data2.get('plugid')
         logging.info("下载安装插件")
         logging.info(req_data)
         logging.info("插件不存在，插件下载成功：" + str(file_name))
@@ -98,8 +100,8 @@ def installPlugin():
       elif code != 200:
         logging.info("插件不存在，并且插件下载失败：" + str(file_name))
         req_data = {}
-        req_data['hostId'] = dic.get('hostId')
-        req_data['plugId'] = dic.get('plugId')
+        req_data['hostId'] = data2.get('hostid')
+        req_data['plugId'] = data2.get('plugid')
         req_data['type'] = '10'
         req_data['cause'] = "下载文件失败"
         req_data = urllib.urlencode(req_data)
@@ -112,8 +114,8 @@ def installPlugin():
       logging.info("插件存在，直接执行插件：" + str(file_name))
       temp = os.popen('sudo python %s' % plugin_dir1).readlines()
       req_data = {}
-      req_data['hostId'] = dic.get('hostId')
-      req_data['plugId'] = dic.get('plugId')
+      req_data['hostId'] = data2.get('hostid')
+      req_data['plugId'] = data2.get('plugid')
       req_data['type'] = '11'
       req_data['cause'] = 'success'
       req_data = urllib.urlencode(req_data)
@@ -137,8 +139,8 @@ def installPlugin():
   except Exception, e:
     logging.info("安装插件出现异常：" + str(e))
     req_data = {}
-    req_data['hostId'] = dic.get('hostId')
-    req_data['plugId'] = dic.get('plugId')
+    req_data['hostId'] = data2.get('hostid')
+    req_data['plugId'] = data2.get('plugid')
     req_data["type"] = "10"
     req_data["cause"] = "系统异常"
     req_data = urllib.urlencode(req_data)
@@ -168,8 +170,8 @@ def doPlugin():
         f.write("%s root python %s" % (cycle, plugin_dir1))
         f.close()
         req_data = {}
-        req_data['hostId'] = dic.get('hostId')
-        req_data['plugId'] = dic.get('plugId')
+        req_data['hostId'] = data2.get('hostid')
+        req_data['plugId'] = data2.get('plugid')
         req_data['type'] = '21'
         req_data['cause'] = 'success'
         req_data = urllib.urlencode(req_data)
@@ -181,8 +183,8 @@ def doPlugin():
       elif code != 200:
         logging.info("插件不存在，并且插件下载失败：" + str(file_name))
         req_data = {}
-        req_data['hostId'] = dic.get('hostId')
-        req_data['plugId'] = dic.get('plugId')
+        req_data['hostId'] = data2.get('hostid')
+        req_data['plugId'] = data2.get('plugid')
         req_data['type'] = '20'
         req_data['cause'] = "下载文件失败"
         req_data = urllib.urlencode(req_data)
@@ -197,8 +199,8 @@ def doPlugin():
       f.write("%s root python %s" % (cycle, plugin_dir1))
       f.close()
       req_data = {}
-      req_data['hostId'] = dic.get('hostId')
-      req_data['plugId'] = dic.get('plugId')
+      req_data['hostId'] = data2.get('hostid')
+      req_data['plugId'] = data2.get('plugid')
       req_data['type'] = '21'
       req_data['cause'] = 'success'
       req_data = urllib.urlencode(req_data)
@@ -210,8 +212,8 @@ def doPlugin():
   except Exception, e:
     logging.info("安装插件出现异常：" + str(e))
     req_data = {}
-    req_data['hostId'] = dic.get('hostId')
-    req_data['plugId'] = dic.get('plugId')
+    req_data['hostId'] = data2.get('hostid')
+    req_data['plugId'] = data2.get('plugid')
     req_data['type'] = '20'
     req_data['cause'] = str(e)
     req_data = urllib.urlencode(req_data)
@@ -245,10 +247,12 @@ def updatePlugin():
     if code == 200:
       logging.info("更新插件成功")
       req_data = {}
-      req_data['hostId'] = dic.get('hostId')
-      req_data['plugId'] = dic.get('plugId')
+      req_data['hostId'] = data2.get('hostid')
+      req_data['plugId'] = data2.get('plugid')
       req_data['type'] = '31'
       req_data['cause'] = 'success'
+      logging.info("更新的时候的req_data")
+      logging.info(req_data)
       req_data = urllib.urlencode(req_data)
       req = urllib2.Request(url=requrl, data=req_data)
       res = urllib2.urlopen(req)
@@ -257,8 +261,8 @@ def updatePlugin():
 
   except Exception, e:
     req_data = {}
-    req_data['hostId'] = dic.get('hostId')
-    req_data['plugId'] = dic.get('plugId')
+    req_data['hostId'] = data2.get('hostid')
+    req_data['plugId'] = data2.get('plugid')
     req_data['type'] = '30'
     req_data['cause'] = str(e)
     req_data = urllib.urlencode(req_data)
@@ -285,8 +289,8 @@ def savePlugin():
       if code == 200:
         logging.info("插件不存在，插件下载成功：" + str(file_name))
         req_data = {}
-        req_data['hostId'] = dic.get('hostId')
-        req_data['plugId'] = dic.get('plugId')
+        req_data['hostId'] = data2.get('hostid')
+        req_data['plugId'] = data2.get('plugid')
         req_data['type'] = '41'
         req_data['cause'] = 'success'
         req_data = urllib.urlencode(req_data)
@@ -296,8 +300,8 @@ def savePlugin():
         logging.info("插件执行结果：" + str(data))
     except Exception, e:
       req_data = {}
-      req_data['hostId'] = dic.get('hostId')
-      req_data['plugId'] = dic.get('plugId')
+      req_data['hostId'] = data2.get('hostid')
+      req_data['plugId'] = data2.get('plugid')
       req_data['type'] = '40'
       req_data['cause'] = str(e)
       req_data = urllib.urlencode(req_data)
@@ -314,8 +318,8 @@ def deletePlugin():
       os.remove(plugin_dir + d)
 
       req_data = {}
-      req_data['hostId'] = dic.get('hostId')
-      req_data['plugId'] = dic.get('plugId')
+      req_data['hostId'] = data2.get('hostid')
+      req_data['plugId'] = data2.get('plugid')
       req_data['type'] = '51'
       req_data['cause'] = 'success'
       logging.info("删除插件")
