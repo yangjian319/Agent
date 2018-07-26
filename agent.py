@@ -193,7 +193,7 @@ except Exception as e:
 
 # 接收controller消息
 def callplugin():
-  cmd = "python /home/opvis/Agent/plugin/update.py" + " " + data2
+  cmd = "python /home/opvis/Agent/update/update.py" + " " + data2
   os.system(cmd)
 while True:
   data, addr = udpsocket.recvfrom(2018)
@@ -222,7 +222,7 @@ while True:
 # 自升级
 udpsocket.close()
 try:
-  cmd = "python /home/opvis/Agent/plugin/agentupdate.py" + " " + data2
+  cmd = "python /home/opvis/Agent/update/agentupdate.py" + " " + data2
   ret = os.system(cmd)
 except Exception as e:
   logging.info(e)
