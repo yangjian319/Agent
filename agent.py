@@ -197,6 +197,8 @@ def callplugin():
   os.system(cmd)
 while True:
   data, addr = udpsocket.recvfrom(2018)
+  logging.info("接收到proxy发过来的原始信息：")
+  logging.info(data)
   data1 = "{0}".format(data)
   lstr = "'''"
   rstr = "'''"
