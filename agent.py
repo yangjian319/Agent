@@ -118,31 +118,34 @@ def file_name(plugin_dir):
 
 # 上报已安装的插件（后期把update相关的插件单独放到一个update的文件夹？）
 def sendFileName():
-  while True:
-    requrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/sendFileName"
-    filenames = file_name(plugin_dir)
-    logging.info(filenames)
-    name = {}
-    allips = allip.get_all_ips()
-    for item in allips:
-      hip = allip.re_format_ip(item)
-      out = allip.read_ip(hip)
-      out.replace("\n", "")
-      out.replace("\r", "")
-      if out == "127.0.0.1":
-        continue
-      #status = ""
+  try:
+    while True:
+      requrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/sendFileName"
+      filenames = file_name(plugin_dir)
+      logging.info(filenames)
+      name = {}
+      allips = allip.get_all_ips()
+      for item in allips:
+        hip = allip.re_format_ip(item)
+        out = allip.read_ip(hip)
+        out.replace("\n", "")
+        out.replace("\r", "")
+        if out == "127.0.0.1":
+          continue
+        #status = ""
 
-      name = {"names":filenames}
-      name["ip"] = out
-      name = urllib.urlencode(name)
-      logging.info("name")
-      logging.info(name)
-      req = urllib2.Request(url=requrl, data=name)
-      res = urllib2.urlopen(req)
-      data = res.read()
-      logging.info("上报已安装插件到proxy：" + data)
-    time.sleep(float(240))
+        name = {"names":filenames}
+        name["ip"] = out
+        name = urllib.urlencode(name)
+        logging.info("name")
+        logging.info(name)
+        req = urllib2.Request(url=requrl, data=name)
+        res = urllib2.urlopen(req)
+        data = res.read()
+        logging.info("上报已安装插件到proxy：" + data)
+      time.sleep(float(240))
+  except Exception as e:
+    logging.info(e)
 try:
   sendfilename = threading.Thread(target=sendFileName, args=())
   sendfilename.start()
