@@ -48,6 +48,7 @@ requrl = str(requrl)
 
 
 # 安装插件
+# 这里改成判断两个id是否为空，为空就手动设置一个值
 def installPlugin():
   get_hostid = data2.get('hostid')
   get_plugid = data2.get('plugid')
@@ -154,7 +155,7 @@ def installPlugin():
 def doPlugin():
   try:
     if (file_name not in dirs):
-      urllib.urlretrieve(url, os.path.join(plugin_dir, file_name))  # 直接覆盖？
+      urllib.urlretrieve(url, os.path.join(plugin_dir, file_name))
       html = urllib.urlopen(url)
       html1 = html.read()
       code = html.code
@@ -166,9 +167,13 @@ def doPlugin():
       if code == 200:
         logging.info("插件不存在，插件下载成功：" + str(file_name))
         logging.info("周期执行插件：" + str(file_name) + str(cycle))
-        f = open("/etc/crontab", "a+")  # type:file
+        cron_dir = "/home/opvis/Agent/cron/" + str(file_name.split(".")[0])
+        f = open(cron_dir, "w")
+        #f = open("/etc/crontab", "a+")  # type:file
         f.write("%s root python %s" % (cycle, plugin_dir1))
         f.close()
+        cron_cmd = "crontab" + " " + cron_dir
+        cron_ret = os.system(cron_cmd)
         req_data = {}
         req_data['hostId'] = data2.get('hostid')
         req_data['plugId'] = data2.get('plugid')
@@ -195,9 +200,13 @@ def doPlugin():
 
     else:
       logging.info("插件存在，直接执行插件：" + str(file_name))
-      f = open("/etc/crontab", "a+")
+      cron_dir = "/home/opvis/Agent/cron/" + str(file_name.split(".")[0])
+      f = open(cron_dir, "w")
+      # f = open("/etc/crontab", "a+")  # type:file
       f.write("%s root python %s" % (cycle, plugin_dir1))
       f.close()
+      cron_cmd = "crontab" + " " + cron_dir
+      cron_ret = os.system(cron_cmd)
       req_data = {}
       req_data['hostId'] = data2.get('hostid')
       req_data['plugId'] = data2.get('plugid')
