@@ -330,24 +330,39 @@ def deletePlugin():
       data = res.read()
       logging.info("删除插件执行结果：" + str(data))
 
-
+logging.info("获取到的status：")
 logging.info(status)
 # 安装插件并执行一次
 if status == 1 and url:
-  installPlugin()
+  try:
+    installPlugin()
+  except Exception as e:
+    logging.info(e)
 
 # 周期性执行插件
 elif status == 2 and url and cycle:
-  doPlugin()
+  try:
+    doPlugin()
+  except Exception as e:
+    logging.info(e)
 
 # 更新插件
 elif status == 3 and url:
-  updatePlugin()
+  try:
+    updatePlugin()
+  except Exception as e:
+    logging.info(e)
 
 # 保存插件
 elif status == 4 and url:
-  savePlugin()
+  try:
+    savePlugin()
+  except Exception as e:
+    logging.info(e)
 
 # 删除插件
 elif status == 5 and url:
-  deletePlugin()
+  try:
+    deletePlugin()
+  except Exception as e:
+    logging.info(e)
