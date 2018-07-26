@@ -155,38 +155,41 @@ except Exception as e:
 
 # 心跳，定期检查agent.lock存在否
 def reportheart():
-  while True:
-    # 读文件，获得机房ip
-    if os.path.exists("/home/opvis/Agent/agent.lock"):
-      with open("/home/opvis/Agent/agent.lock", "r") as fd:
-        jifangip = fd.read()
-    else:
-      logging.info("机房ip地址文件不存在")
-      sys.exit(1)
+  try:
+    while True:
+      # 读文件，获得机房ip
+      if os.path.exists("/home/opvis/Agent/agent.lock"):
+        with open("/home/opvis/Agent/agent.lock", "r") as fd:
+          jifangip = fd.read()
+      else:
+        logging.info("机房ip地址文件不存在")
+        sys.exit(1)
 
-    ips = []
-    ip = {}
-    allips = allip.get_all_ips()
+      ips = []
+      ip = {}
+      allips = allip.get_all_ips()
 
-    for item in allips:
-      hip = allip.re_format_ip(item)
-      out = allip.read_ip(hip)
-      out.replace("\n", "")
-      out.replace("\r", "")
-      if out == "127.0.0.1":
-        continue
-      ips.append(out)
-      ip["ip"] = ",".join(ips)
-    logging.info(ip)
-    ip = urllib.urlencode(ip)
-    requrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/sendIp"
-    req = urllib2.Request(url=requrl, data=ip)
-    res = urllib2.urlopen(req)
-    data = res.read()
-    logging.info("上报心跳到proxy：" + data)
-    # 在这里写检查agent主程序是否有更新，通过urllib去检查一个地址是否能连通，能，就自己给自己发一个udp消息，内容为agentupdate
-    # agentupdate.py里面需要读取agent.lock文件重新拼接agent.py下载url
-    time.sleep(float(240))
+      for item in allips:
+        hip = allip.re_format_ip(item)
+        out = allip.read_ip(hip)
+        out.replace("\n", "")
+        out.replace("\r", "")
+        if out == "127.0.0.1":
+          continue
+        ips.append(out)
+        ip["ip"] = ",".join(ips)
+      logging.info(ip)
+      ip = urllib.urlencode(ip)
+      requrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/sendIp"
+      req = urllib2.Request(url=requrl, data=ip)
+      res = urllib2.urlopen(req)
+      data = res.read()
+      logging.info("上报心跳到proxy：" + data)
+      # 在这里写检查agent主程序是否有更新，通过urllib去检查一个地址是否能连通，能，就自己给自己发一个udp消息，内容为agentupdate
+      # agentupdate.py里面需要读取agent.lock文件重新拼接agent.py下载url
+      time.sleep(float(240))
+  except Exception as e:
+    logging.info(e)
 try:
   t = threading.Thread(target=reportheart, args=())
   t.daemon = True
