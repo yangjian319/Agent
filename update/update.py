@@ -193,7 +193,7 @@ def doPlugin():
         logging.info("周期执行插件：" + str(file_name) + str(cycle))
         cron_dir = "/home/opvis/Agent/cron/" + str(file_name.split(".")[0])
         f = open(cron_dir, "w")
-        f.write("%s root python %s" % (cycle, plugin_dir1))
+        f.write("%s python %s\n" % (cycle, plugin_dir1))
         f.close()
         cron_cmd = "crontab" + " " + cron_dir
         cron_ret = os.system(cron_cmd)
@@ -228,7 +228,7 @@ def doPlugin():
       cron_dir = "/home/opvis/Agent/cron/" + str(file_name.split(".")[0])
       f = open(cron_dir, "w")
       # f = open("/etc/crontab", "a+")  # type:file
-      f.write("%s root python %s" % (cycle, plugin_dir1))
+      f.write("%s python %s\n" % (cycle, plugin_dir1))
       f.close()
       cron_cmd = "crontab" + " " + cron_dir
       cron_ret = os.system(cron_cmd)
@@ -239,6 +239,8 @@ def doPlugin():
       req_data['plugId'] = data2.get('plugid')
       req_data['type'] = '21'
       req_data['cause'] = 'success'
+      logging.info("获取到的两个id为空的时候：")
+      logging.info(req_data)
       req_data = urllib.urlencode(req_data)
       req = urllib2.Request(url=requrl, data=req_data)
       res = urllib2.urlopen(req)
