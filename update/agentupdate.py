@@ -12,7 +12,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 
 # 日志
-LOG_FILE = "/data/Agent/log/agent.log"
+LOG_FILE = "/home/opvis/Agent/log/agent.log"
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 fh = TimedRotatingFileHandler(LOG_FILE,when='D',interval=1,backupCount=30)
@@ -53,7 +53,7 @@ except OSError,error:
   sys.exit(1)
 
 # 下载新的agent
-urllib.urlretrieve(url, "/data/Agent/temp/agent.py")
+urllib.urlretrieve(url, "/home/opvis/Agent/temp/agent.py")
 logging.info("下载成功")
-os.system("sh /data/Agent/update/agentupdate.sh")
+os.system("sh /home/opvis/Agent/update/agentupdate.sh")
 logging.info("升级agent.py")

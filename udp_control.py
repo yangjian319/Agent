@@ -6,13 +6,14 @@
 
 import socket
 
-address = ('127.0.0.1', 9998)
+address = ('127.0.0.1', 9997)
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 while True:
   msg = raw_input("Please input：")
   if not msg:
     break
   s.sendto(msg, address)
+  print s.recv(1024)
 s.close()
 
 
