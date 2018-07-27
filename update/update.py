@@ -70,8 +70,14 @@ def installPlugin():
         logging.info(e)
       if code == 200:
         req_data = {}
-        req_data['hostId'] = data2.get('hostid')
-        req_data['plugId'] = data2.get('plugid')
+        hostid = data2.get('hostid')
+        plugid = data2.get('plugid')
+        if not hostid and plugid:
+          req_data['hostId'] = "9999"
+          req_data['plugId'] = "9999"
+        else:
+          req_data['hostId'] = data2.get('hostid')
+          req_data['plugId'] = data2.get('plugid')
         logging.info("下载安装插件")
         logging.info(req_data)
         logging.info("插件不存在，插件下载成功：" + str(file_name))
@@ -101,8 +107,14 @@ def installPlugin():
       elif code != 200:
         logging.info("插件不存在，并且插件下载失败：" + str(file_name))
         req_data = {}
-        req_data['hostId'] = data2.get('hostid')
-        req_data['plugId'] = data2.get('plugid')
+        hostid = data2.get('hostid')
+        plugid = data2.get('plugid')
+        if not hostid and plugid:
+          req_data['hostId'] = "9999"
+          req_data['plugId'] = "9999"
+        else:
+          req_data['hostId'] = data2.get('hostid')
+          req_data['plugId'] = data2.get('plugid')
         req_data['type'] = '10'
         req_data['cause'] = "下载文件失败"
         req_data = urllib.urlencode(req_data)
@@ -115,8 +127,14 @@ def installPlugin():
       logging.info("插件存在，直接执行插件：" + str(file_name))
       temp = os.popen('sudo python %s' % plugin_dir1).readlines()
       req_data = {}
-      req_data['hostId'] = data2.get('hostid')
-      req_data['plugId'] = data2.get('plugid')
+      hostid = data2.get('hostid')
+      plugid = data2.get('plugid')
+      if not hostid and plugid:
+        req_data['hostId'] = "9999"
+        req_data['plugId'] = "9999"
+      else:
+        req_data['hostId'] = data2.get('hostid')
+        req_data['plugId'] = data2.get('plugid')
       req_data['type'] = '11'
       req_data['cause'] = 'success'
       req_data = urllib.urlencode(req_data)
@@ -140,8 +158,14 @@ def installPlugin():
   except Exception, e:
     logging.info("安装插件出现异常：" + str(e))
     req_data = {}
-    req_data['hostId'] = data2.get('hostid')
-    req_data['plugId'] = data2.get('plugid')
+    hostid = data2.get('hostid')
+    plugid = data2.get('plugid')
+    if not hostid and plugid:
+      req_data['hostId'] = "9999"
+      req_data['plugId'] = "9999"
+    else:
+      req_data['hostId'] = data2.get('hostid')
+      req_data['plugId'] = data2.get('plugid')
     req_data["type"] = "10"
     req_data["cause"] = "系统异常"
     req_data = urllib.urlencode(req_data)
@@ -169,11 +193,12 @@ def doPlugin():
         logging.info("周期执行插件：" + str(file_name) + str(cycle))
         cron_dir = "/home/opvis/Agent/cron/" + str(file_name.split(".")[0])
         f = open(cron_dir, "w")
-        #f = open("/etc/crontab", "a+")  # type:file
         f.write("%s root python %s" % (cycle, plugin_dir1))
         f.close()
         cron_cmd = "crontab" + " " + cron_dir
         cron_ret = os.system(cron_cmd)
+        if cron_ret == 0:
+          os.remove(cron_dir)
         req_data = {}
         req_data['hostId'] = data2.get('hostid')
         req_data['plugId'] = data2.get('plugid')
@@ -207,6 +232,8 @@ def doPlugin():
       f.close()
       cron_cmd = "crontab" + " " + cron_dir
       cron_ret = os.system(cron_cmd)
+      if cron_ret == 0:
+        os.remove(cron_dir)
       req_data = {}
       req_data['hostId'] = data2.get('hostid')
       req_data['plugId'] = data2.get('plugid')
