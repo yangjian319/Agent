@@ -73,11 +73,11 @@ def installPlugin():
         hostid = data2.get('hostid')
         plugid = data2.get('plugid')
         if not hostid and plugid:
-          req_data['hostId'] = "9999"
-          req_data['plugId'] = "9999"
-        else:
           req_data['hostId'] = data2.get('hostid')
           req_data['plugId'] = data2.get('plugid')
+        else:
+          req_data['hostId'] = "9999"
+          req_data['plugId'] = "9999"
         logging.info("下载安装插件")
         logging.info(req_data)
         logging.info("插件不存在，插件下载成功：" + str(file_name))
@@ -110,11 +110,11 @@ def installPlugin():
         hostid = data2.get('hostid')
         plugid = data2.get('plugid')
         if not hostid and plugid:
-          req_data['hostId'] = "9999"
-          req_data['plugId'] = "9999"
-        else:
           req_data['hostId'] = data2.get('hostid')
           req_data['plugId'] = data2.get('plugid')
+        else:
+          req_data['hostId'] = "9999"
+          req_data['plugId'] = "9999"
         req_data['type'] = '10'
         req_data['cause'] = "下载文件失败"
         req_data = urllib.urlencode(req_data)
@@ -130,11 +130,11 @@ def installPlugin():
       hostid = data2.get('hostid')
       plugid = data2.get('plugid')
       if not hostid and plugid:
-        req_data['hostId'] = "9999"
-        req_data['plugId'] = "9999"
-      else:
         req_data['hostId'] = data2.get('hostid')
         req_data['plugId'] = data2.get('plugid')
+      else:
+        req_data['hostId'] = "9999"
+        req_data['plugId'] = "9999"
       req_data['type'] = '11'
       req_data['cause'] = 'success'
       req_data = urllib.urlencode(req_data)
@@ -161,11 +161,11 @@ def installPlugin():
     hostid = data2.get('hostid')
     plugid = data2.get('plugid')
     if not hostid and plugid:
-      req_data['hostId'] = "9999"
-      req_data['plugId'] = "9999"
-    else:
       req_data['hostId'] = data2.get('hostid')
       req_data['plugId'] = data2.get('plugid')
+    else:
+      req_data['hostId'] = "9999"
+      req_data['plugId'] = "9999"
     req_data["type"] = "10"
     req_data["cause"] = "系统异常"
     req_data = urllib.urlencode(req_data)
