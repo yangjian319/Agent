@@ -95,10 +95,13 @@ def post_md5():
   requrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/uploadMD5"
   req_data = {}
   req_data['md5'] = md5
-  args_restful = urllib.urlencode(req_data)
-  req = urllib2.Request(url=requrl, data=args_restful)
-  res = urllib2.urlopen(req)
-  data = res.read()
+  try:
+    args_restful = urllib.urlencode(req_data)
+    req = urllib2.Request(url=requrl, data=args_restful)
+    res = urllib2.urlopen(req)
+    data = res.read()
+  except Exception as e:
+    logging.info(e)
   logging.info("上传md5值到proxy：" + data)
 
 try:
@@ -139,9 +142,12 @@ def sendFileName():
         name = urllib.urlencode(name)
         logging.info("name")
         logging.info(name)
-        req = urllib2.Request(url=requrl, data=name)
-        res = urllib2.urlopen(req)
-        data = res.read()
+        try:
+          req = urllib2.Request(url=requrl, data=name)
+          res = urllib2.urlopen(req)
+          data = res.read()
+        except Exception as e:
+          logging.info(e)
         logging.info("上报已安装插件到proxy：" + data)
       time.sleep(float(240))
   except Exception as e:
@@ -181,9 +187,12 @@ def reportheart():
       logging.info(ip)
       ip = urllib.urlencode(ip)
       requrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/sendIp"
-      req = urllib2.Request(url=requrl, data=ip)
-      res = urllib2.urlopen(req)
-      data = res.read()
+      try:
+        req = urllib2.Request(url=requrl, data=ip)
+        res = urllib2.urlopen(req)
+        data = res.read()
+      except Exception as e:
+        logging.info(e)
       logging.info("上报心跳到proxy：" + data)
       # 在这里写检查agent主程序是否有更新，通过urllib去检查一个地址是否能连通，能，就自己给自己发一个udp消息，内容为agentupdate
       # agentupdate.py里面需要读取agent.lock文件重新拼接agent.py下载url
