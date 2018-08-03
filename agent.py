@@ -11,16 +11,17 @@
 3、自升级，自动升级agent.py
 4、日志，agent调用插件
 '''
-import commands
-import json
-import logging
-import socket
-import threading
-import urllib
-import urllib2
-import time
+
 import os
 import sys
+import time
+import json
+import socket
+import urllib
+import urllib2
+import logging
+import commands
+import threading
 from plugin import allip
 from logging.handlers import TimedRotatingFileHandler
 
@@ -48,7 +49,7 @@ for ip in iplist:
       fd.write(currentip)
     so.close()
   except Exception as e:
-    logging.info(e)
+    logging.info("Determine which area the machine belongs to error: " + str(e))
 
 # 机房ip
 jifangip = currentip
@@ -65,15 +66,14 @@ try:
   udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
   udpsocket.bind(address)
 except Exception as e:
-  logging.info(e)
+  logging.info("Udp connection error: " + str(e))
 
 # 创建守护进程
 try:
   if os.fork() > 0:
     sys.exit(0)
 except OSError, error:
-  msg = "agent.py first fork failed!"
-  logging.info(msg)
+  logging.info("agent.py first fork failed!")
   sys.exit(1)
 
 os.chdir("/")
@@ -84,8 +84,7 @@ try:
   if os.fork() > 0:
     sys.exit(0)
 except OSError, error:
-  msg = "agent.py second fork failed!"
-  logging.info(msg)
+  logging.info("agent.py second fork failed!")
   sys.exit(1)
 
 
@@ -101,13 +100,13 @@ def post_md5():
     res = urllib2.urlopen(req)
     data = res.read()
   except Exception as e:
-    logging.info(e)
-  logging.info("上传md5值到proxy：" + data)
+    logging.info("Upload the native MD5 value to the proxy error: " + str(e))
+  logging.info("Upload the native MD5 value to the proxy success: " + str(data))
 
 try:
   post_md5()
 except Exception as e:
-  logging.info(e)
+  logging.info("Upload the native MD5 value to the proxy error: " + str(e))
 
 
 def file_name(plugin_dir):
@@ -135,8 +134,6 @@ def sendFileName():
         out.replace("\r", "")
         if out == "127.0.0.1":
           continue
-        #status = ""
-
         name = {"names":filenames}
         name["ip"] = out
         name = urllib.urlencode(name)
@@ -147,16 +144,16 @@ def sendFileName():
           res = urllib2.urlopen(req)
           data = res.read()
         except Exception as e:
-          logging.info(e)
-        logging.info("上报已安装插件到proxy：" + data)
+          logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
+        logging.info("Upload the machine IP and installed plugins to the proxy success: " + str(data))
       time.sleep(float(240))
   except Exception as e:
-    logging.info(e)
+    logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
 try:
   sendfilename = threading.Thread(target=sendFileName, args=())
   sendfilename.start()
 except Exception as e:
-  logging.info(e)
+  logging.info("Upload the machine IP and installed plugins to the proxy, thread error: " + str(e))
 
 
 # 心跳，定期检查agent.lock存在否
@@ -168,13 +165,12 @@ def reportheart():
         with open("/home/opvis/Agent/agent.lock", "r") as fd:
           jifangip = fd.read()
       else:
-        logging.info("机房ip地址文件不存在")
-        sys.exit(1)
+        logging.info("agent.lock not found!")
+      sys.exit(1)
 
       ips = []
       ip = {}
       allips = allip.get_all_ips()
-
       for item in allips:
         hip = allip.re_format_ip(item)
         out = allip.read_ip(hip)
@@ -192,19 +188,19 @@ def reportheart():
         res = urllib2.urlopen(req)
         data = res.read()
       except Exception as e:
-        logging.info(e)
-      logging.info("上报心跳到proxy：" + data)
+        logging.info("Report heart to proxy error: " + str(e))
+      logging.info("Report heart to proxy success: " + str(data))
       # 在这里写检查agent主程序是否有更新，通过urllib去检查一个地址是否能连通，能，就自己给自己发一个udp消息，内容为agentupdate
       # agentupdate.py里面需要读取agent.lock文件重新拼接agent.py下载url
       time.sleep(float(240))
   except Exception as e:
-    logging.info(e)
+    logging.info("Report heart to proxy error: " + str(e))
 try:
   t = threading.Thread(target=reportheart, args=())
   t.daemon = True
   t.start()
 except Exception as e:
-  logging.info(e)
+  logging.info("Report heart to proxy error: " + str(e))
 
 # 接收controller消息
 def callplugin():
@@ -212,17 +208,15 @@ def callplugin():
   os.system(cmd)
 while True:
   data, addr = udpsocket.recvfrom(2018)
-  logging.info("接收到proxy发过来的原始信息：")
-  logging.info(data)
+  time_second = time.time()
+  logging.info("Time of data received: " + str(time_second))
+  logging.info("Receive data from proxy: " + str(data))
   data1 = "{0}".format(data)
   lstr = "'''"
   rstr = "'''"
   data2 = lstr + data1 + rstr
-  dic = json.loads(data)  # str
-  # data = json.dumps(data)
-  time_second = time.time()
-  logging.info(time_second)
-  logging.info(dic)
+  dic = json.loads(data)
+  logging.info("Change data to dict: " + str(dic))
 #{u'pluginfo': {u'status': 3, u'url': u'http://10.124.5.163:18382/proxyDownLoad/net_v03.py', u'version': u'03', u'name': u'net', u'cycle': u''}, u'hostid': 3902, u'plugid': 1}
   name = dic.get("name")
   if name == "agentupdate":
@@ -234,7 +228,7 @@ while True:
       t.daemon = True
       t.start()
     except Exception, e:
-      logging.info(e)
+      logging.info("Call the plugin error: " + str(e))
 
 # 自升级
 udpsocket.close()
@@ -242,5 +236,4 @@ try:
   cmd = "python /home/opvis/Agent/update/agentupdate.py" + " " + data2
   ret = os.system(cmd)
 except Exception as e:
-  logging.info(e)
-sys.exit(0)
+  logging.info("Upgrade agent error: " + str(e))
