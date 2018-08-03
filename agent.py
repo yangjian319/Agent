@@ -101,7 +101,7 @@ def post_md5():
     data = res.read()
   except Exception as e:
     logging.info("Upload the native MD5 value to the proxy error: " + str(e))
-  logging.info("Upload the native MD5 value to the proxy success: " + str(data))
+  logging.info("Upload the native MD5 value to the proxy successfully: " + str(data))
 
 try:
   post_md5()
@@ -124,7 +124,7 @@ def sendFileName():
     while True:
       requrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/sendFileName"
       filenames = file_name(plugin_dir)
-      logging.info(filenames)
+      #logging.info(filenames)
       name = {}
       allips = allip.get_all_ips()
       for item in allips:
@@ -137,8 +137,7 @@ def sendFileName():
         name = {"names":filenames}
         name["ip"] = out
         name = urllib.urlencode(name)
-        logging.info("name")
-        logging.info(name)
+        logging.info("Upload ip and pluginName: " + str(name))
         try:
           req = urllib2.Request(url=requrl, data=name)
           res = urllib2.urlopen(req)
