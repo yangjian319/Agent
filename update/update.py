@@ -52,7 +52,9 @@ def installPlugin():
   # get_plugid = data2.get('plugid')
   # logging.info(get_hostid)
   # logging.info(get_plugid)
-  logging.info("When install plugin, get hostid and plugid" + str(data2.get('hostid') + " " + data2.get('plugid')))
+  logging.info("When install plugin, get hostid and plugid: ")
+  logging.info(data2.get('hostid'))
+  logging.info(data2.get('plugid'))
 
   try:
 
@@ -370,7 +372,7 @@ def savePlugin():
         req = urllib2.Request(url=requrl, data=req_data)
         res = urllib2.urlopen(req)
         data = res.read()
-        logging.info("Interface feedback successfully: " + str(data))
+        logging.info("Interface feedback, successfully: " + str(data))
       except Exception as e:
         logging.info("Saveplugin error: " + str(e))
 
