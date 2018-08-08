@@ -25,6 +25,9 @@ import threading
 from plugin import allip
 from logging.handlers import TimedRotatingFileHandler
 
+
+VERSION = 1
+
 # 日志
 LOG_FILE = "/home/opvis/Agent/log/agent.log"
 logger = logging.getLogger()
@@ -191,6 +194,18 @@ def reportheart():
       logging.info("Report heart to proxy success: " + str(data))
       # 在这里写检查agent主程序是否有更新，通过urllib去检查一个地址是否能连通，能，就自己给自己发一个udp消息，内容为agentupdate
       # agentupdate.py里面需要读取agent.lock文件重新拼接agent.py下载url
+      agentrequrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/checkAgentVersion"
+      data = ""
+      req = urllib2.Request(url=agentrequrl, data=data)
+      res = urllib2.urlopen(req)
+      result = res.read()
+      logging.info("升级agent的时候获得的消息：" + str(result))
+      # {"agentName":"agent.py","agentUrl":"/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
+      NEW_VERSION = result["agentVersion"]
+      if NEW_VERSION > VERSION:
+        send_to_server = result
+        udpsocket.sendto(send_to_server, address)
+      udpsocket.close()
       time.sleep(float(240))
   except Exception as e:
     logging.info("Report heart to proxy error: " + str(e))
@@ -201,6 +216,7 @@ try:
 except Exception as e:
   logging.info("Report heart to proxy error: " + str(e))
 
+
 # 接收controller消息
 def callplugin():
   cmd = "python /home/opvis/Agent/update/update.py" + " " + data2
@@ -210,6 +226,7 @@ while True:
   time_second = time.time()
   logging.info("Time of data received: " + str(time_second))
   logging.info("Receive data from proxy: " + str(data))
+  # {"pluginfo":{"name":"topologic","status":1,"url":"http://10.124.5.163:18382/proxyDownLoad/topologic_v03.py","version":"03"},"tableName":"ZZ_HOST_RELATION20180808103501"}
   data1 = "{0}".format(data)
   lstr = "'''"
   rstr = "'''"
@@ -217,8 +234,9 @@ while True:
   dic = json.loads(data)
   logging.info("Change data to dict: " + str(dic))
 #{u'pluginfo': {u'status': 3, u'url': u'http://10.124.5.163:18382/proxyDownLoad/net_v03.py', u'version': u'03', u'name': u'net', u'cycle': u''}, u'hostid': 3902, u'plugid': 1}
+  # {"agentName":"agent.py","agentUrl":"/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
   name = dic.get("name")
-  if name == "agentupdate":
+  if name == "updateAgent":
     break
   else:
     # 调用插件
