@@ -24,6 +24,8 @@ fh.setFormatter(formatter)
 logger.addHandler(fh)
 
 plugin_dir = "/home/opvis/Agent/plugin/"
+if not os.path.exists(plugin_dir):
+  os.mkdir(plugin_dir)
 dirs = os.listdir(plugin_dir)
 data = sys.argv[1:]
 logging.info("Received data from proxy:" + str(data))
