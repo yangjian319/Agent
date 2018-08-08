@@ -22,7 +22,7 @@ import urllib2
 import logging
 import commands
 import threading
-from plugin import allip
+from utils import allip
 from logging.handlers import TimedRotatingFileHandler
 
 
@@ -121,7 +121,7 @@ def file_name(plugin_dir):
   return list
 
 
-# 上报已安装的插件（后期把update相关的插件单独放到一个update的文件夹？）
+# 上报已安装的插件
 def sendFileName():
   try:
     while True:
