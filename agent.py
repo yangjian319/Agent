@@ -145,6 +145,19 @@ def sendFileName():
           req = urllib2.Request(url=requrl, data=name)
           res = urllib2.urlopen(req)
           data = res.read()
+          agentrequrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/checkAgentVersion"
+          data = ""
+          req = urllib2.Request(url=agentrequrl, data=data)
+          res = urllib2.urlopen(req)
+          result = res.read()
+          logging.info("升级agent的时候获得的消息：" + str(result))
+          # {"agentName":"agent.py","agentUrl":"/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
+          NEW_VERSION = result["agentVersion"]
+          if NEW_VERSION > VERSION:
+            send_to_server = result
+            udpsocket.sendto(send_to_server, address)
+          udpsocket.close()
+          logging.info("自升级给自己发送消息并关闭连接")
         except Exception as e:
           logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
         logging.info("Upload the machine IP and installed plugins to the proxy success: " + str(data))
@@ -194,18 +207,18 @@ def reportheart():
       logging.info("Report heart to proxy success: " + str(data))
       # 在这里写检查agent主程序是否有更新，通过urllib去检查一个地址是否能连通，能，就自己给自己发一个udp消息，内容为agentupdate
       # agentupdate.py里面需要读取agent.lock文件重新拼接agent.py下载url
-      agentrequrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/checkAgentVersion"
-      data = ""
-      req = urllib2.Request(url=agentrequrl, data=data)
-      res = urllib2.urlopen(req)
-      result = res.read()
-      logging.info("升级agent的时候获得的消息：" + str(result))
-      # {"agentName":"agent.py","agentUrl":"/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
-      NEW_VERSION = result["agentVersion"]
-      if NEW_VERSION > VERSION:
-        send_to_server = result
-        udpsocket.sendto(send_to_server, address)
-      udpsocket.close()
+      # agentrequrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/checkAgentVersion"
+      # data = ""
+      # req = urllib2.Request(url=agentrequrl, data=data)
+      # res = urllib2.urlopen(req)
+      # result = res.read()
+      # logging.info("升级agent的时候获得的消息：" + str(result))
+      # # {"agentName":"agent.py","agentUrl":"/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
+      # NEW_VERSION = result["agentVersion"]
+      # if NEW_VERSION > VERSION:
+      #   send_to_server = result
+      #   udpsocket.sendto(send_to_server, address)
+      # udpsocket.close()
       time.sleep(float(240))
   except Exception as e:
     logging.info("Report heart to proxy error: " + str(e))
