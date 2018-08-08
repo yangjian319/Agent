@@ -155,7 +155,8 @@ def sendFileName():
           res = urllib2.urlopen(req)
           result = res.read()
           logging.info("升级agent的时候获得的消息：" + str(result))
-          # {"agentName":"agent.py","agentUrl":"/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
+          # {"agentName":"agent.py","agentUrl":"http://10.124.5.163:18382/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
+          result = json.loads(result)
           NEW_VERSION = result["agentVersion"]
           if NEW_VERSION > VERSION:
             send_to_server = result
@@ -250,7 +251,7 @@ while True:
   dic = json.loads(data)
   logging.info("Change data to dict: " + str(dic))
 #{u'pluginfo': {u'status': 3, u'url': u'http://10.124.5.163:18382/proxyDownLoad/net_v03.py', u'version': u'03', u'name': u'net', u'cycle': u''}, u'hostid': 3902, u'plugid': 1}
-  # {"agentName":"agent.py","agentUrl":"/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
+  # {"agentName":"agent.py","agentUrl":"http://10.124.5.163:18382/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
   name = dic.get("name")
   if name == "updateAgent":
     break
