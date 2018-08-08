@@ -28,15 +28,14 @@ if os.path.exists("/home/opvis/Agent/agent.lock"):
 else:
   logging.info("agent.lock not found!")
 
-# {"agentName":"agent.py","agentUrl":"/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
+# {"agentName":"agent.py","agentUrl":"http://10.124.5.163:18382/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
 data = sys.argv[1:]
 logging.info("从agent收到的格式化后加引号的升级agent的消息" + str(data))
 dic = data[0]
 dic = json.loads(dic)
-tmp_url = dic.get("agentUrl")
+url = dic.get("agentUrl")
 # 自升级的url需要确定一下
-url = "http://" + jifangip + tmp_url
-logging.info("自升级拼接的下载地址" + str(url))
+logging.info("自升级的下载地址" + str(url))
 
 
 try:
