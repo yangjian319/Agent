@@ -28,14 +28,13 @@ if os.path.exists("/home/opvis/Agent/agent.lock"):
 else:
   logging.info("agent.lock not found!")
 
-# {"agentName":"agent.py","agentUrl":"http://10.124.5.163:18382/proxyDownLoad/agent.py","agentVersion":1,"name":"updateAgent"}
 data = sys.argv[1:]
-logging.info("从agent收到的格式化后加引号的升级agent的消息" + str(data))
+logging.info("Get data from proxy: " + str(data))
 dic = data[0]
 dic = json.loads(dic)
 url = dic.get("agentUrl")
 # 自升级的url需要确定一下
-logging.info("自升级的下载地址" + str(url))
+logging.info("Download agent url: " + str(url))
 
 
 try:
@@ -60,4 +59,4 @@ except OSError,error:
 urllib.urlretrieve(url, "/home/opvis/Agent/temp/agent.py")
 logging.info("Download successfully!")
 os.system("sh /home/opvis/Agent/update/agentupdate.sh")
-logging.info("Already update agent.py")
+logging.info("Update agent.py successfully!")
