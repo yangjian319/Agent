@@ -58,11 +58,6 @@ for ip in iplist:
 jifangip = currentip
 plugin_dir = "/home/opvis/Agent/plugin/"
 
-# 创建日志文件目录，这个其实都不用，它在安装agent的时候不是要下发一个tar.gz包吗，目录直接在里面建好？
-logdir = "/home/opvis/Agent/log"
-if not os.path.exists(logdir):
-  os.makedirs(logdir)
-
 # 建立UDP
 try:
   address = ("0.0.0.0", 9997)
