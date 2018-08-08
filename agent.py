@@ -145,6 +145,10 @@ def sendFileName():
           req = urllib2.Request(url=requrl, data=name)
           res = urllib2.urlopen(req)
           data = res.read()
+        except Exception as e:
+          logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
+        logging.info("Upload the machine IP and installed plugins to the proxy success: " + str(data))
+        try:
           agentrequrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/checkAgentVersion"
           data = ""
           req = urllib2.Request(url=agentrequrl, data=data)
@@ -159,8 +163,7 @@ def sendFileName():
           udpsocket.close()
           logging.info("自升级给自己发送消息并关闭连接")
         except Exception as e:
-          logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
-        logging.info("Upload the machine IP and installed plugins to the proxy success: " + str(data))
+          logging.info("自升级错误" + str(e))
       time.sleep(float(240))
   except Exception as e:
     logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
