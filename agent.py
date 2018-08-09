@@ -165,7 +165,7 @@ def reportheart():
           jifangip = fd.read()
       else:
         logging.info("agent.lock not found!")
-      sys.exit(1)
+        sys.exit(1)
 
       ips = []
       ip = {}
