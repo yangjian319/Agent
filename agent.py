@@ -124,29 +124,29 @@ def sendFileName():
         name["ip"] = out
         name = urllib.urlencode(name)
         logging.info("Upload ip and pluginName: " + str(name))
-        try:
-          req = urllib2.Request(url=requrl, data=name)
-          res = urllib2.urlopen(req)
-          data = res.read()
-        except Exception as e:
-          logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
-        logging.info("Upload the machine IP and installed plugins to the proxy success: " + str(data))
-        try:
-          agentrequrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/checkAgentVersion"
-          data = ""
-          req = urllib2.Request(url=agentrequrl, data=data)
-          res = urllib2.urlopen(req)
-          result = res.read()
-          logging.info("Get data from proxy when upgrade agent: " + str(result))
-          result1 = json.loads(result)
-          NEW_VERSION = result1["agentVersion"]
-          if NEW_VERSION > VERSION:
-            send_to_server = result
-            udpsocket.sendto(send_to_server, address)
-            udpsocket.close()
-          #logging.info("Send upgrade data to agent.")
-        except Exception as e:
-          logging.info("Upgrade agent error: " + str(e))
+      try:
+        req = urllib2.Request(url=requrl, data=name)
+        res = urllib2.urlopen(req)
+        data = res.read()
+      except Exception as e:
+        logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
+      logging.info("Upload the machine IP and installed plugins to the proxy success: " + str(data))
+      try:
+        agentrequrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/checkAgentVersion"
+        data = ""
+        req = urllib2.Request(url=agentrequrl, data=data)
+        res = urllib2.urlopen(req)
+        result = res.read()
+        logging.info("Get data from proxy when upgrade agent: " + str(result))
+        result1 = json.loads(result)
+        NEW_VERSION = result1["agentVersion"]
+        if NEW_VERSION > VERSION:
+          send_to_server = result
+          udpsocket.sendto(send_to_server, address)
+          udpsocket.close()
+        #logging.info("Send upgrade data to agent.")
+      except Exception as e:
+        logging.info("Upgrade agent error: " + str(e))
       time.sleep(float(240))
   except Exception as e:
     logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
