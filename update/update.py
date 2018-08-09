@@ -48,7 +48,6 @@ def installPlugin():
   logging.info(data2.get('hostid'))
   logging.info(data2.get('plugid'))
   try:
-
     if (file_name not in dirs):
       try:
         urllib.urlretrieve(url, os.path.join(plugin_dir, file_name))
@@ -61,16 +60,10 @@ def installPlugin():
         logging.info("Install plugin, plugin not exists and download plugin failed: " + str(e))
       if code == 200:
         req_data = {}
-        hostid = data2.get('hostid')
-        plugid = data2.get('plugid')
-        if not hostid and plugid:
-          req_data['hostId'] = data2.get('hostid')
-          req_data['plugId'] = data2.get('plugid')
-        else:
-          req_data['hostId'] = "9999"
-          req_data['plugId'] = "9999"
-        temp = os.popen('sudo python %s' % plugin_dir1).readlines()
-        logging.info("Install plugin, plugin not exists, download and excute plugin successfully: " + str(file_name))
+        req_data['hostId'] = data2.get('hostid')
+        req_data['plugId'] = data2.get('plugid')
+        #temp = os.popen('sudo python %s' % plugin_dir1).readlines()
+        logging.info("Install plugin, plugin not exists, download plugin successfully: " + str(file_name))
         req_data["type"] = "11"
         req_data["cause"] = "success"
         try:
@@ -81,32 +74,10 @@ def installPlugin():
           logging.info("Interface feedback plugin installed successfully: " + str(data))
         except Exception as e:
           logging.info("Interface feedback plugin install failed: " +str(e))
-
-        # HostRelationship
-        try:
-          url_new = "http://" + tmp_url.split("/")[2] + "/umsproxy/hostExtract/uploadHostInformation"
-          url_new = str(url_new)
-          hostRelationship = {}
-          hostRelationship["tabName"] = data2.get("tableName")
-          hostRelationship["hostRelationship"] = temp
-          hostRelationship = json.dumps(hostRelationship)
-          header_dict = {"Content-Type": "application/json;charset=UTF-8"}
-          req = urllib2.Request(url=url_new, data=hostRelationship, headers=header_dict)
-          res = urllib2.urlopen(req)
-          logging.info("Interface feedback upload hostinformation successfully: " + str(res.read()))
-        except Exception as e:
-          logging.info("Interface feedback upload hostinformation failed:" + str(e))
-
       elif code != 200:
         req_data = {}
-        hostid = data2.get('hostid')
-        plugid = data2.get('plugid')
-        if not hostid and plugid:
-          req_data['hostId'] = data2.get('hostid')
-          req_data['plugId'] = data2.get('plugid')
-        else:
-          req_data['hostId'] = "9999"
-          req_data['plugId'] = "9999"
+        req_data['hostId'] = data2.get('hostid')
+        req_data['plugId'] = data2.get('plugid')
         req_data['type'] = '10'
         req_data['cause'] = "下载文件失败"
         try:
@@ -117,54 +88,11 @@ def installPlugin():
           logging.info("Interface feedback install plugin, plugin not exists and download plugin failed:" + str(data))
         except Exception as e:
           logging.info("Interface feedback install plugin, plugin not exists and download plugin failed: " + str(file_name))
-
-    else:
-      temp = os.popen('sudo python %s' % plugin_dir1).readlines()
-      req_data = {}
-      hostid = data2.get('hostid')
-      plugid = data2.get('plugid')
-      if not hostid and plugid:
-        req_data['hostId'] = data2.get('hostid')
-        req_data['plugId'] = data2.get('plugid')
-      else:
-        req_data['hostId'] = "9999"
-        req_data['plugId'] = "9999"
-      req_data['type'] = '11'
-      req_data['cause'] = 'success'
-      try:
-        req_data = urllib.urlencode(req_data)
-        req = urllib2.Request(url=requrl, data=req_data)
-        res = urllib2.urlopen(req)
-        logging.info("Interface feedback install plugin, plugin exists and execute successfully." + str(file_name))
-      except Exception as e:
-        logging.info("Interface feedback install plugin, plugin exists and execute failed: " + str(e))
-
-        # HostRelationship
-      try:
-        url_new = "http://" + tmp_url.split("/")[2] + "/umsproxy/hostExtract/uploadHostInformation"
-        url_new = str(url_new)
-        hostRelationship = {}
-        hostRelationship["tabName"] = data2.get("tableName")
-        hostRelationship["hostRelationship"] = temp
-        hostRelationship = json.dumps(hostRelationship)
-        header_dict = {"Content-Type": "application/json;charset=UTF-8"}
-        req = urllib2.Request(url=url_new, data=hostRelationship, headers=header_dict)
-        res = urllib2.urlopen(req)
-        logging.info("Interface feedback upload hostinformation successfully: " + str(res.read()))
-      except Exception as e:
-        logging.info("Interface feedback upload hostinformation failed: " + str(e))
-
   except Exception, e:
     logging.info("When install plugin, error:" + str(e))
     req_data = {}
-    hostid = data2.get('hostid')
-    plugid = data2.get('plugid')
-    if not hostid and plugid:
-      req_data['hostId'] = data2.get('hostid')
-      req_data['plugId'] = data2.get('plugid')
-    else:
-      req_data['hostId'] = "9999"
-      req_data['plugId'] = "9999"
+    req_data['hostId'] = data2.get('hostid')
+    req_data['plugId'] = data2.get('plugid')
     req_data["type"] = "10"
     req_data["cause"] = "系统异常"
     try:
@@ -371,6 +299,57 @@ def deletePlugin():
       except Exception as e:
         logging.info("Deleteplugin error: " + str(e))
 
+def hostInformation():
+  try:
+    if (file_name not in dirs):
+      try:
+        urllib.urlretrieve(url, os.path.join(plugin_dir, file_name))
+        html = urllib.urlopen(url)
+        html1 = html.read()
+        code = html.code
+        with open(os.path.join(plugin_dir, file_name), "wb") as fp:
+          fp.write(html1)
+      except Exception, e:
+        logging.info("Install plugin, plugin not exists and download plugin failed: " + str(e))
+      if code == 200:
+        temp = os.popen('sudo python %s' % plugin_dir1).readlines()
+        logging.info("Install plugin, plugin not exists, download and excute plugin successfully: " + str(file_name))
+        # HostRelationship
+        try:
+          url_new = "http://" + tmp_url.split("/")[2] + "/umsproxy/hostExtract/uploadHostInformation"
+          url_new = str(url_new)
+          hostRelationship = {}
+          hostRelationship["tabName"] = data2.get("tableName")
+          hostRelationship["hostRelationship"] = temp
+          hostRelationship = json.dumps(hostRelationship)
+          header_dict = {"Content-Type": "application/json;charset=UTF-8"}
+          req = urllib2.Request(url=url_new, data=hostRelationship, headers=header_dict)
+          res = urllib2.urlopen(req)
+          logging.info("Interface feedback upload hostinformation successfully: " + str(res.read()))
+        except Exception as e:
+          logging.info("Interface feedback upload hostinformation failed:" + str(e))
+      elif code != 200:
+          logging.info("Plugin not exists and download plugin failed: " + str(file_name))
+    else:
+      temp = os.popen('sudo python %s' % plugin_dir1).readlines()
+      logging.info("Plugin exists and execute successfully." + str(file_name))
+      # HostRelationship
+      try:
+        url_new = "http://" + tmp_url.split("/")[2] + "/umsproxy/hostExtract/uploadHostInformation"
+        url_new = str(url_new)
+        hostRelationship = {}
+        hostRelationship["tabName"] = data2.get("tableName")
+        hostRelationship["hostRelationship"] = temp
+        hostRelationship = json.dumps(hostRelationship)
+        header_dict = {"Content-Type": "application/json;charset=UTF-8"}
+        req = urllib2.Request(url=url_new, data=hostRelationship, headers=header_dict)
+        res = urllib2.urlopen(req)
+        logging.info("Interface feedback upload hostinformation successfully: " + str(res.read()))
+      except Exception as e:
+        logging.info("Interface feedback upload hostinformation failed: " + str(e))
+  except Exception, e:
+    logging.info("When install plugin, error:" + str(e))
+
 logging.info("Received status: " + str(status))
 
 if status == 1 and url:
@@ -400,5 +379,10 @@ elif status == 4 and url:
 elif status == 5 and url:
   try:
     deletePlugin()
+  except Exception as e:
+    logging.info(e)
+elif status == 6 and url:
+  try:
+    hostInformation()
   except Exception as e:
     logging.info(e)
