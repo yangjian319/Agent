@@ -144,7 +144,7 @@ def sendFileName():
             send_to_server = result
             udpsocket.sendto(send_to_server, address)
             udpsocket.close()
-          logging.info("Send upgrade data to agent.")
+          #logging.info("Send upgrade data to agent.")
         except Exception as e:
           logging.info("Upgrade agent error: " + str(e))
       time.sleep(float(240))
