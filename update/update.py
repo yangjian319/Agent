@@ -319,7 +319,7 @@ def hostInformation():
           url_new = "http://" + tmp_url.split("/")[2] + "/umsproxy/hostExtract/uploadHostInformation"
           url_new = str(url_new)
           hostRelationship = {}
-          hostRelationship["tabName"] = data2.get("tableName")
+          hostRelationship["tableName"] = data2.get("tableName")
           hostRelationship["hostRelationship"] = temp
           hostRelationship = json.dumps(hostRelationship)
           header_dict = {"Content-Type": "application/json;charset=UTF-8"}
@@ -338,7 +338,7 @@ def hostInformation():
         url_new = "http://" + tmp_url.split("/")[2] + "/umsproxy/hostExtract/uploadHostInformation"
         url_new = str(url_new)
         hostRelationship = {}
-        hostRelationship["tabName"] = data2.get("tableName")
+        hostRelationship["tableName"] = data2.get("tableName")
         hostRelationship["hostRelationship"] = temp
         hostRelationship = json.dumps(hostRelationship)
         header_dict = {"Content-Type": "application/json;charset=UTF-8"}
