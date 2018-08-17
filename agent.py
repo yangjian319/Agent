@@ -4,14 +4,6 @@
 # @Author: yangjian
 # @File  : agent.py
 
-
-'''
-1、上报心跳，采用threading方式
-2、守护进程
-3、自升级，自动升级agent.py
-4、日志，agent调用插件
-'''
-
 import os
 import sys
 import time
@@ -28,7 +20,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 VERSION = 1
 
-# 日志
+# log
 LOG_FILE = "/home/opvis/Agent/log/agent.log"
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -42,7 +34,6 @@ logger.addHandler(fh)
 if not os.path.exists("/home/opvis/Agent/temp"):
   os.mkdir("/home/opvis/Agent/temp")
 
-# 判断本机属于哪个机房，并把机房ip写入本地文件中供插件上报使用，这个过程需要12s左右
 iplist = ["172.30.130.137:18382", "172.30.130.126:18382", "10.124.5.163:18382", "10.144.2.248:18382",
           "10.123.30.177:18382", "172.30.194.121:18382", "172.16.5.20:18382", "10.181.1.0:18382"]
 for ip in iplist:
@@ -57,11 +48,9 @@ for ip in iplist:
   except Exception as e:
     logging.info("Determine which area the machine belongs to error: " + str(e))
 
-# 机房ip
 jifangip = currentip
 plugin_dir = "/home/opvis/Agent/plugin/"
 
-# 建立UDP
 try:
   address = ("0.0.0.0", 9997)
   udpsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -69,7 +58,6 @@ try:
 except Exception as e:
   logging.info("Udp connection error: " + str(e))
 
-# 创建守护进程
 try:
   if os.fork() > 0:
     sys.exit(0)
@@ -88,8 +76,6 @@ except OSError, error:
   logging.info("agent.py second fork failed!")
   sys.exit(1)
 
-
-# 安装agent的时候就上传一次md5值入库
 def post_md5():
   (status, md5) = commands.getstatusoutput("sudo md5sum /root/.ssh/authorized_keys|awk '{print $1}'")
   requrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/uploadMD5"
@@ -118,8 +104,7 @@ def file_name(plugin_dir):
         list.append(file)
   return list
 
-
-# 上报已安装的插件
+# Upload installed plugins and get upgrade agent informations
 def sendFileName():
   try:
     while True:
@@ -139,29 +124,29 @@ def sendFileName():
         name["ip"] = out
         name = urllib.urlencode(name)
         logging.info("Upload ip and pluginName: " + str(name))
-        try:
-          req = urllib2.Request(url=requrl, data=name)
-          res = urllib2.urlopen(req)
-          data = res.read()
-        except Exception as e:
-          logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
-        logging.info("Upload the machine IP and installed plugins to the proxy success: " + str(data))
-        try:
-          agentrequrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/checkAgentVersion"
-          data = ""
-          req = urllib2.Request(url=agentrequrl, data=data)
-          res = urllib2.urlopen(req)
-          result = res.read()
-          logging.info("Get data from proxy when upgrade agent: " + str(result))
-          result1 = json.loads(result)
-          NEW_VERSION = result1["agentVersion"]
-          if NEW_VERSION > VERSION:
-            send_to_server = result
-            udpsocket.sendto(send_to_server, address)
-            udpsocket.close()
-          logging.info("Send upgrade data to agent.")
-        except Exception as e:
-          logging.info("Upgrade agent error: " + str(e))
+      try:
+        req = urllib2.Request(url=requrl, data=name)
+        res = urllib2.urlopen(req)
+        data = res.read()
+      except Exception as e:
+        logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
+      logging.info("Upload the machine IP and installed plugins to the proxy success: " + str(data))
+      try:
+        agentrequrl = "http://" + jifangip + "/umsproxy/autoProxyPlugIn/checkAgentVersion"
+        data = ""
+        req = urllib2.Request(url=agentrequrl, data=data)
+        res = urllib2.urlopen(req)
+        result = res.read()
+        logging.info("Get data from proxy when upgrade agent: " + str(result))
+        result1 = json.loads(result)
+        NEW_VERSION = result1["agentVersion"]
+        if NEW_VERSION > VERSION:
+          send_to_server = result
+          udpsocket.sendto(send_to_server, address)
+          udpsocket.close()
+        #logging.info("Send upgrade data to agent.")
+      except Exception as e:
+        logging.info("Upgrade agent error: " + str(e))
       time.sleep(float(240))
   except Exception as e:
     logging.info("Upload the machine IP and installed plugins to the proxy error: " + str(e))
@@ -171,18 +156,16 @@ try:
 except Exception as e:
   logging.info("Upload the machine IP and installed plugins to the proxy, thread error: " + str(e))
 
-
-# 心跳，定期检查agent.lock存在否
+# report heart
 def reportheart():
   try:
     while True:
-      # 读文件，获得机房ip
       if os.path.exists("/home/opvis/Agent/agent.lock"):
         with open("/home/opvis/Agent/agent.lock", "r") as fd:
           jifangip = fd.read()
       else:
         logging.info("agent.lock not found!")
-      sys.exit(1)
+        sys.exit(1)
 
       ips = []
       ip = {}
@@ -216,8 +199,7 @@ try:
 except Exception as e:
   logging.info("Report heart to proxy error: " + str(e))
 
-
-# 接收controller消息
+# Get data from proxy
 def callplugin():
   cmd = "python /home/opvis/Agent/update/update.py" + " " + data2
   os.system(cmd)
@@ -236,7 +218,6 @@ while True:
   if name == "updateAgent":
     break
   else:
-    # 调用插件
     try:
       t = threading.Thread(target=callplugin, args=())
       t.daemon = True
@@ -244,7 +225,7 @@ while True:
     except Exception, e:
       logging.info("Call the plugin error: " + str(e))
 
-# 自升级
+# Upgrade agent
 udpsocket.close()
 try:
   cmd = "python /home/opvis/Agent/update/agentupdate.py" + " " + data2
