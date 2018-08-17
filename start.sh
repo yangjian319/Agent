@@ -1,2 +1,2 @@
 #!/bin/bash
-python agent.py
+python /home/opvis/Agent/agent.py
